@@ -22,7 +22,7 @@ This lua script is hud with advanced options.
 
 ### Bomb timer
 
-This lua scripts draws a bomb that indicates current time before exploding.
+This lua scripts draws a box that indicates current time before exploding.
 
 [Click here to redirect to the lua](https://github.com/solohvh/gs-lua/blob/master/bomb_timer.lua)
 
