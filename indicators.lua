@@ -7,16 +7,16 @@ local w, h = client.screen_size()
 local draw_rectangle = client.draw_rectangle
 local epicky = 
 {
-    check = ui.new_checkbox("aa", "other", "Indicators"),
-	color = ui.new_color_picker("aa", "other", "accent", 149, 184, 6, 255),
-	colorg1 = ui.new_color_picker("aa", "other", "accentg1", 59, 175, 222, 255),
-	selection = ui.new_multiselect("aa", "other", "\n", "Fakelag", "Body aim", "Fake duck"),
-	colorg2 = ui.new_color_picker("aa", "other", "accentg2", 202, 70, 205, 255),
-	box_pos = ui.new_combobox("aa", "other", "Box position", "Below text", "Next to text"),
-	header = ui.new_checkbox("aa", "other", "Header"),
-	gradient = ui.new_checkbox("aa", "other", "Gradient"),
-	xx = ui.new_slider("aa", "other", "X position", 0, w, w - 220),
-	yy = ui.new_slider("aa", "other", "Y position", 0, h, h/2)
+        check = ui.new_checkbox("misc", "settings", "Indicators"),
+	color = ui.new_color_picker("misc", "settings", "accent", 149, 184, 6, 255),
+	colorg1 = ui.new_color_picker("misc", "settings", "accentg1", 59, 175, 222, 255),
+	selection = ui.new_multiselect("misc", "settings", "\n", "Fakelag", "Body aim", "Fake duck"),
+	colorg2 = ui.new_color_picker("misc", "settings", "accentg2", 202, 70, 205, 255),
+	box_pos = ui.new_combobox("misc", "settings", "Box position", "Below text", "Next to text"),
+	header = ui.new_checkbox("misc", "settings", "Header"),
+	gradient = ui.new_checkbox("misc", "settings", "Gradient"),
+	xx = ui.new_slider("misc", "settings", "X position", 0, w, w - 220),
+	yy = ui.new_slider("misc", "settings", "Y position", 0, h, h/2)
 }
 local baim_ref = ui.reference("rage", "other", "Force body aim")
 local fd_ref = ui.reference("rage", "other", "Duck peek assist")
