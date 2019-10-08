@@ -15,6 +15,8 @@ local epicky =
 	box_pos = ui.new_combobox("misc", "settings", "Box position", "Below text", "Next to text"),
 	header = ui.new_checkbox("misc", "settings", "Header"),
 	gradient = ui.new_checkbox("misc", "settings", "Gradient"),
+	hide_sg = ui.new_checkbox("misc", "settings", "Hide skeet OG indicators"),
+	sg_pos = ui.new_slider("MISC", "Settings", "indpost", 1, 100, 1),
 	xx = ui.new_slider("misc", "settings", "X position", 0, w, w - 220),
 	yy = ui.new_slider("misc", "settings", "Y position", 0, h, h/2)
 }
@@ -26,6 +28,7 @@ client.set_event_callback("setup_command", function(cmd)
     choked_ticksf = cmd.chokedcommands
     if cmd.chokedcommands > 3 then choked_ticks = cmd.chokedcommands elseif cmd.chokedcommands < 3 then choked_ticks = 0 elseif not entity.is_alive(local_player) then choked_ticks = 0 end
 end)
+ui.set_visible(epicky.sg_pos, false)
 
 local function Contains(table, val) --thanks sapphyrus
     for i = 1, #table do
@@ -59,6 +62,15 @@ local function w0w(ctx, e)
 	local rg, gg, bg, ag = ui.get(epicky.colorg1)
 	local rg2, gg2, bg2, ag2 = ui.get(epicky.colorg2)
 	
+	if ui.get(epicky.hide_sg) then
+	    for i = ui.get(epicky.sg_pos),1,-1 do
+		    ui.set(epicky.sg_pos, 100)
+	        renderer.indicator(255,255,255,0,i)   
+	    end	
+	else
+	    ui.set(epicky.sg_pos, 1)
+	end
+	
     if ui.get(epicky.check) then
 	    ui.set_visible(epicky.selection, true)
 		if ui.get(epicky.gradient) then
@@ -73,6 +85,7 @@ local function w0w(ctx, e)
 		ui.set_visible(epicky.box_pos, true)
 		ui.set_visible(epicky.header, true)
 		ui.set_visible(epicky.gradient, true)
+		ui.set_visible(epicky.hide_sg, true)
 		ui.set_visible(epicky.xx, true)
 		ui.set_visible(epicky.yy, true)
     else
@@ -82,6 +95,7 @@ local function w0w(ctx, e)
 		ui.set_visible(epicky.box_pos, false)
 		ui.set_visible(epicky.header, false)
 		ui.set_visible(epicky.gradient, false)
+		ui.set_visible(epicky.hide_sg, false)
 		ui.set_visible(epicky.xx, false)
 		ui.set_visible(epicky.yy, false)
 	end
