@@ -7,7 +7,7 @@ local w, h = client.screen_size()
 local draw_rectangle = client.draw_rectangle
 local epicky = 
 {
-        check = ui.new_checkbox("misc", "settings", "Indicators"),
+    check = ui.new_checkbox("misc", "settings", "Indicators"),
 	color = ui.new_color_picker("misc", "settings", "accent", 149, 184, 6, 255),
 	colorg1 = ui.new_color_picker("misc", "settings", "accentg1", 59, 175, 222, 255),
 	selection = ui.new_multiselect("misc", "settings", "\n", "Fakelag", "Body aim", "Fake duck"),
@@ -20,14 +20,11 @@ local epicky =
 }
 local baim_ref = ui.reference("rage", "other", "Force body aim")
 local fd_ref = ui.reference("rage", "other", "Duck peek assist")
+local id_ref = ui.reference("aa", "other", "Infinite duck")
 local choked_ticks = 0
 client.set_event_callback("setup_command", function(cmd)
     choked_ticksf = cmd.chokedcommands
-    if cmd.chokedcommands > 3 then
-    choked_ticks = cmd.chokedcommands
-	else
-	choked_ticks = 0
-	end
+    if cmd.chokedcommands > 3 then choked_ticks = cmd.chokedcommands elseif cmd.chokedcommands < 3 then choked_ticks = 0 elseif not entity.is_alive(local_player) then choked_ticks = 0 end
 end)
 
 local function Contains(table, val) --thanks sapphyrus
@@ -65,15 +62,9 @@ local function w0w(ctx, e)
     if ui.get(epicky.check) then
 	    ui.set_visible(epicky.selection, true)
 		if ui.get(epicky.gradient) then
-		    if Contains(val, "Body aim") and not Contains(val, "Fakelag") and not Contains(val, "Fake duck") then
-			    ui.set_visible(epicky.colorg1, false)
-		        ui.set_visible(epicky.colorg2, false)
-			    ui.set_visible(epicky.color, true)
-			elseif not Contains(val, "Body aim") and Contains(val, "Fakelag") and Contains(val, "Fake duck") or not Contains(val, "Body aim") and Contains(val, "Fakelag") and not Contains(val, "Fake duck") or not Contains(val, "Body aim") and not Contains(val, "Fakelag") and Contains(val, "Fake duck") or Contains(val, "Body aim") and not Contains(val, "Fakelag") and Contains(val, "Fake duck") or Contains(val, "Body aim") and Contains(val, "Fakelag") and not Contains(val, "Fake duck") then
-		        ui.set_visible(epicky.colorg1, true)
-			    ui.set_visible(epicky.colorg2, true)
-			    ui.set_visible(epicky.color, false)
-			end
+		    ui.set_visible(epicky.colorg1, true)
+			ui.set_visible(epicky.colorg2, true)
+			ui.set_visible(epicky.color, false)
 		else
 		    ui.set_visible(epicky.colorg1, false)
 		    ui.set_visible(epicky.colorg2, false)
@@ -128,10 +119,19 @@ local function w0w(ctx, e)
 		
 	elseif ui.get(epicky.check) and Contains(val, "Body aim") and not Contains(val, "Fakelag") and not Contains(val, "Fake duck") then
 	    draw_container(ctx, xx, yy, 200, 35)
-        if ui.get(baim_ref) then
-            draw.text(xx + 13, yy + 12, r, g, b, a, "b", 0, "• Body aim")
+		
+		if ui.get(epicky.gradient) then
+		    if ui.get(baim_ref) then
+                draw.text(xx + 13, yy + 12, rg, gg, bg, ag, "b", 0, "• Body aim")
+		    else
+		        draw.text(xx + 13, yy + 12, 255, 255, 255, 255, "", 0, "Body aim")
+		    end
 		else
-		    draw.text(xx + 13, yy + 12, 255, 255, 255, 255, "", 0, "Body aim")
+            if ui.get(baim_ref) then
+                draw.text(xx + 13, yy + 12, r, g, b, a, "b", 0, "• Body aim")
+		    else
+		        draw.text(xx + 13, yy + 12, 255, 255, 255, 255, "", 0, "Body aim")
+		    end
 		end
 		
 	elseif ui.get(epicky.check) and Contains(val, "Fake duck") and not Contains(val, "Fakelag") and not Contains(val, "Body aim") then
@@ -145,7 +145,7 @@ local function w0w(ctx, e)
 		elseif ui.get(epicky.box_pos) == "Next to text" then
 		    draw.rect(xx + 77, yy + 16, 110, 5, 10, 10, 10, 150)
 		end
-		if ui.get(fd_ref) then
+		if ui.get(fd_ref) and ui.get(id_ref) then
 		    if ui.get(epicky.box_pos) == "Below text" then
 				if ui.get(epicky.gradient) then
 				    renderer.gradient(xx + 12, yy + 27, 170/choked_ticksf, 5, rg, gg, bg, ag, rg2, gg2, bg2, ag2, true)
@@ -200,13 +200,13 @@ local function w0w(ctx, e)
 			end
 			
 			if ui.get(epicky.gradient) then
-			    if ui.get(fd_ref) then
+			    if ui.get(fd_ref) and ui.get(id_ref) then
                     draw.text(xx + 13, yy + 54, rg, gg, bg, ag, "b", 0, "• Fake duck")
 		        else
 		            draw.text(xx + 13, yy + 54, 255, 255, 255, 255, "", 0, "Fake duck")
 		        end
 			else
-			    if ui.get(fd_ref) then
+			    if ui.get(fd_ref) and ui.get(id_ref) then
                     draw.text(xx + 13, yy + 54, r, g, b, a, "b", 0, "• Fake duck")
 		        else
 		            draw.text(xx + 13, yy + 54, 255, 255, 255, 255, "", 0, "Fake duck")
@@ -238,13 +238,13 @@ local function w0w(ctx, e)
 			end
 			
 			if ui.get(epicky.gradient) then
-			    if ui.get(fd_ref) then
+			    if ui.get(fd_ref) and ui.get(id_ref) then
                     draw.text(xx + 13, yy + 46, rg, gg, bg, ag, "b", 0, "• Fake duck")
 		        else
 		            draw.text(xx + 13, yy + 46, 255, 255, 255, 255, "", 0, "Fake duck")
 		        end
 			else
-			    if ui.get(fd_ref) then
+			    if ui.get(fd_ref) and ui.get(id_ref) then
                     draw.text(xx + 13, yy + 46, r, g, b, a, "b", 0, "• Fake duck")
 		        else
 		            draw.text(xx + 13, yy + 46, 255, 255, 255, 255, "", 0, "Fake duck")
@@ -331,13 +331,13 @@ local function w0w(ctx, e)
 			end
 			
 			if ui.get(epicky.gradient) then
-			    if ui.get(fd_ref) then
+			    if ui.get(fd_ref) and ui.get(id_ref) then
                     draw.text(xx + 13, yy + 35, rg, gg, bg, ag, "b", 0, "• Fake duck")
 		        else
 		            draw.text(xx + 13, yy + 35, 255, 255, 255, 255, "", 0, "Fake duck")
 		        end
 			else
-			    if ui.get(fd_ref) then
+			    if ui.get(fd_ref) and ui.get(id_ref) then
                     draw.text(xx + 13, yy + 35, r, g, b, a, "b", 0, "• Fake duck")
 		        else
 		            draw.text(xx + 13, yy + 35, 255, 255, 255, 255, "", 0, "Fake duck")
@@ -355,13 +355,13 @@ local function w0w(ctx, e)
 			end
 			
 			if ui.get(epicky.gradient) then
-			    if ui.get(fd_ref) then
+			    if ui.get(fd_ref) and ui.get(id_ref) then
                     draw.text(xx + 13, yy + 29, rg, gg, bg, ag, "b", 0, "• Fake duck")
 		        else
 		            draw.text(xx + 13, yy + 29, 255, 255, 255, 255, "", 0, "Fake duck")
 		        end
 			else
-			    if ui.get(fd_ref) then
+			    if ui.get(fd_ref) and ui.get(id_ref) then
                     draw.text(xx + 13, yy + 29, r, g, b, a, "b", 0, "• Fake duck")
 		        else
 		            draw.text(xx + 13, yy + 29, 255, 255, 255, 255, "", 0, "Fake duck")
@@ -382,7 +382,7 @@ local function w0w(ctx, e)
 		elseif ui.get(epicky.box_pos) == "Next to text" then
 		    draw.rect(xx + 77, yy + 16, 110, 5, 10, 10, 10, 150)
 		end
-		if ui.get(fd_ref) then
+		if ui.get(fd_ref) and ui.get(id_ref) then
 		    if ui.get(epicky.box_pos) == "Below text" then
 		        if ui.get(epicky.gradient) then
 				    renderer.gradient(xx + 12, yy + 27, 170/choked_ticksf, 5, rg, gg, bg, ag, rg2, gg2, bg2, ag2, true)
@@ -438,4 +438,3 @@ end
 
 
 client.set_event_callback("paint", w0w)
-client.set_event_callback("setup_command", setup_command)
