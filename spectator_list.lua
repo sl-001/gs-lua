@@ -39,6 +39,24 @@ local function intersect(x, y, w, h, debug)
     return cx >= x and cx <= x + w and cy >= y and cy <= y + h
 end
 
+-- https://wiki.garrysmod.com/page/Enums/OBS_MODE
+local observer_modes = {
+    [0] = "None", -- OBS_MODE_NONE 
+    [1] = "Deathcam", -- OBS_MODE_DEATHCAM 
+    [2] = "Freezecam", -- OBS_MODE_FREEZECAM 
+    [3] = "Fixed 3rd person", -- OBS_MODE_FIXED 
+    [4] = "1st person", -- OBS_MODE_IN_EYE 
+    [5] = "3rd person", -- OBS_MODE_CHASE 
+    [6] = "Noclip" -- OBS_MODE_ROAMING 
+}
+
+local teams = {
+	[0] = "None",
+	[1] = "Spec",
+	[2] = "T",
+	[3] = "CT",
+}
+
 local function draw_dcontainer(x, y, w, h, title, header)
     local r, g, b, a = ui.get(gui.col_spec)
     draw.box(x, y, w, 25, 46, 43, 50, 200)
@@ -55,14 +73,14 @@ function draw_gscontainer(x, y, w, h, title, header) --gamesense container
     local c = {10, 60, 40, 40, 40, 60, 20}
     local r, g, b, a = ui.get(gui.col_spec_gs)
     for i = 0,6,1 do
-        renderer.rectangle(x+i, y+i, w-(i*2), 29-(i*2), c[i+1], c[i+1], c[i+1], a)
+        draw.box(x+i, y+i, w-(i*2), 29-(i*2), c[i+1], c[i+1], c[i+1], a)
         draw.text(x + w/2, y + 14, r, g, b, 255, "c", 0, title)
-        renderer.rectangle(x+i, y+i+31, w-(i*2), h-(i*2), c[i+1], c[i+1], c[i+1], a)
+        draw.box(x+i, y+i+31, w-(i*2), h-(i*2), c[i+1], c[i+1], c[i+1], a)
     end
 
     if header == true then
-        renderer.gradient(x + 7, y + 7, w/2, 1, 59, 175, 222, 255, 202, 70, 205, 255, true)
-        renderer.gradient(x + w/2, y + 7, w/2 - 7, 1, 202, 70, 205, 255, 201, 227, 58, 255, true)
+        draw.gradient(x + 7, y + 7, w/2, 1, 59, 175, 222, 255, 202, 70, 205, 255, true)
+        draw.gradient(x + w/2, y + 7, w/2 - 7, 1, 202, 70, 205, 255, 201, 227, 58, 255, true)
     end
 end
 
@@ -105,7 +123,7 @@ client.set_event_callback("paint", function(ctx, entity_index)
     if not ui.get(gui.enable_spec) then return end
     local header_c = ui.get(gui.header)
     local spectators = {}
-    local my_spectators = {}
+    local my_spectators = {name = {}, team = {}, observer_mode = {}}
 
     local cx, cy = mouse_position()
 
@@ -135,14 +153,24 @@ client.set_event_callback("paint", function(ctx, entity_index)
                 if spectators[observer_target] == nil then
                     spectators[observer_target] = {}
                 end
-            table.insert(spectators[observer_target], player)
+                table.insert(spectators[observer_target], player)
             end
         end
     end
 
     if spectators[lp] ~= nil then
         for i=1, #spectators[lp] do
-            table.insert(my_spectators, entity.get_player_name(spectators[lp][i]))
+            local name = entity.get_player_name(spectators[lp][i])
+            local team = teams[entity.get_prop(spectators[lp][i], "m_iTeamNum")]
+            local observer_mode = observer_modes[entity.get_prop(spectators[lp][i], "m_iObserverMode")]
+            if name:len() > 20 then 
+                name = name:sub(1, 15);
+            end
+            my_spectators[i] = {
+                name = name,
+                team = team,
+                observer_mode = observer_mode
+            }
         end
     end
 
@@ -151,7 +179,7 @@ client.set_event_callback("paint", function(ctx, entity_index)
         if ui.is_menu_open() then
             draw_dcontainer(wnd.x, wnd.y, wnd.w, 15, "Spectators", header_c)
             draw.line(wnd.x, wnd.y + 28, wnd.x + wnd.w - 1, wnd.y + 28, r, g, b, a)
-            draw.text(wnd.x + 5, wnd.y + 30, 255, 255, 255, 255, "", 0, "Someone")
+            draw.text(wnd.x + 5, wnd.y + 31, 255, 255, 255, 255, "", 0, "Someone / CT / 3rd Person")
             if left_click then 
                 if wnd.resize then 
                     wnd.w = cx - wnd.rx
@@ -171,13 +199,9 @@ client.set_event_callback("paint", function(ctx, entity_index)
             end
             if not ui.is_menu_open() then
                 draw_dcontainer(wnd.x, wnd.y, wnd.w, h2o, "Spectators", header_c)
-
                 for i=1, #my_spectators do
                     draw.line(wnd.x, wnd.y + 14 + (i * 15), wnd.x + wnd.w - 1, wnd.y + 14 + (i * 15), r, g, b, a)
-                end
-
-                for i=1, #my_spectators do
-                    draw.text(wnd.x + 5, (wnd.y+15) + (i * 15), 255, 255, 255, 255, "", 0, my_spectators[i])
+                    draw.text(wnd.x + 5, (wnd.y+16) + (i * 15), 255, 255, 255, 255, "", 0, string.format("%s / %s / %s", my_spectators[i].name, my_spectators[i].team, my_spectators[i].observer_mode))
                 end
             end
         end
@@ -185,7 +209,7 @@ client.set_event_callback("paint", function(ctx, entity_index)
         local r, g, b, a = ui.get(gui.col_spec_gs)
         if ui.is_menu_open() then
             draw_gscontainer(wnd.x, wnd.y, wnd.w, 25, "Spectators", header_c)
-            draw.text(wnd.x + 8, wnd.y + 37, 255, 255, 255, 255, "", 0, "Someone")
+            draw.text(wnd.x + 8, wnd.y + 37, 255, 255, 255, 255, "", 0, "Someone / CT / 3rd Person")
             if left_click then 
                 if wnd.resize then 
                     wnd.w = cx - wnd.rx
@@ -206,15 +230,17 @@ client.set_event_callback("paint", function(ctx, entity_index)
             if not ui.is_menu_open() then
                 draw_gscontainer(wnd.x, wnd.y, wnd.w, h2o + 10, "Spectators", header_c)
                 for i=1, #my_spectators do
-                    draw.text(wnd.x + 8, (wnd.y+22) + (i * 15), 255, 255, 255, 255, "", 0, my_spectators[i])
+                    draw.text(wnd.x + 8, (wnd.y+22) + (i * 15), 255, 255, 255, 255, "", 0, string.format("%s / %s / %s", 
+                    my_spectators[i].name, my_spectators[i].team, my_spectators[i].observer_mode))
                 end
             end
         end
     end
 end)
 
+local cl_fullupdate = cvar.cl_fullupdate
 client.set_event_callback("round_start", function()
-    client.exec("cl_fullupdate")
+    cl_fullupdate:invoke_callback()
 end)
 
 client.set_event_callback("shutdown", function()
