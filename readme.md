@@ -1,10 +1,10 @@
 # gamesense lua scripts
 
-this repository is mainly for my gamesense lua scripts.
+Repository mainly for my gamesense lua scripts.
 
 ### Keystrokes
 
-This lua script is just drawing selected keys.
+Drawing of selected keys.
 
 [Click here to redirect to the lua](https://github.com/solohvh/gs-lua/blob/master/keystrokes.lua)
 
@@ -12,7 +12,7 @@ This lua script is just drawing selected keys.
 
 ### Spectator list
 
-This lua script is just draws a simple table that shows your current spectators.
+Draws a simple table that shows your current spectators.
 
 [Click here to redirect to the lua](https://github.com/solohvh/gs-lua/blob/master/spectator_list.lua)
 
@@ -20,7 +20,7 @@ This lua script is just draws a simple table that shows your current spectators.
 
 ### Indicators
 
-This lua script is simple drawing if youre currently using something and the value of thing youre using.
+Simple table that shows your current (thing).
 
 [Click here to redirect to the lua](https://github.com/solohvh/gs-lua/blob/master/indicators.lua)
 
@@ -29,7 +29,7 @@ This lua script is simple drawing if youre currently using something and the val
 
 ### HUD
 
-This lua script is hud with advanced options.
+Pretty self-explenatory.
 
 [Click here to redirect to the lua](https://github.com/solohvh/gs-lua/blob/master/hud.lua)
 
@@ -38,7 +38,7 @@ This lua script is hud with advanced options.
 
 ### Bomb timer
 
-This lua scripts draws a box that indicates current time before exploding.
+Simple box that tells us time before exploding.
 
 [Click here to redirect to the lua](https://github.com/solohvh/gs-lua/blob/master/bomb_timer.lua)
 
