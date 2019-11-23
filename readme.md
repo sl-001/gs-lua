@@ -4,7 +4,7 @@ Repository mainly for my gamesense lua scripts.
 
 ### Watermark
 
-Custom made watermarks for gamesense that show your kdr, fps, username, cheats name and velocity.
+Custom made watermarks for gamesense that show your kdr, fps, username, cheats name, velocity and current time in hours:minutes.
 
 [Click here to redirect to the lua](https://github.com/solohvh/gs-lua/blob/master/watermarks.lua)
 
