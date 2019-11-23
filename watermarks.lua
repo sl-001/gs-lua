@@ -1,6 +1,5 @@
 local options = { "Text", "Username", "Time", "Velocity", "KDR", "FPS", "Ping" }
 local styles = { "Gamesense", "Custom", "Dump", "Dump 2", "Trash" }
-local lp = entity.get_local_player()
 local w, h = client.screen_size()
 local frametimes = {}
 local fps_prev = 0
@@ -157,9 +156,7 @@ ui.set_callback(gui.enable, menu_things)
 menu_things()
 
 client.set_event_callback("paint", function()
-
-    if not entity.is_alive(lp) then return end
-
+    local lp = entity.get_local_player()
     local lp_name = entity.get_player_name(lp)
     local p_res = entity.get_all("CCSPlayerResource")[1]
     local cx, cy = ui.mouse_position()
@@ -170,8 +167,6 @@ client.set_event_callback("paint", function()
     local fps = accumulate_fps()
     local hours, minutes, seconds, milliseconds = client.system_time()
     hours, minutes = string.format("%02d", hours), string.format("%02d", minutes)
-    local vel = { y = entity.get_prop(lp, "m_vecVelocity"), x = entity.get_prop(lp, "m_vecVelocity") }
-    local lpe = { get_kills = entity.get_prop(p_res, "m_iKills", lp), get_deaths = entity.get_prop(p_res, "m_iDeaths", lp) }
     local width = 13
 
     if #opts == 0 then
@@ -240,6 +235,7 @@ client.set_event_callback("paint", function()
                 draw.text(text.x + 24, text.y - 1, 255, 255, 255, a, "", 0, ":")
                 draw.text(text.x + 28, text.y, r, g, b, a, "", 0, minutes)
             elseif opts_temp == "Velocity" then
+                local vel = { y = entity.get_prop(lp, "m_vecVelocity"), x = entity.get_prop(lp, "m_vecVelocity") }
                 if vel.x ~= nil then
                     local velocity = math.sqrt(vel.x*vel.x + vel.y*vel.y)
                     velocity = math.min(9999, velocity) + 0.2
@@ -248,6 +244,7 @@ client.set_event_callback("paint", function()
                     draw.text(text.x + draw.measure_text("", velocity) + 10, text.y, 255, 255, 255, a, "", 0, "u/t")
                 end
             elseif opts_temp == "KDR" then
+                local lpe = { get_kills = entity.get_prop(p_res, "m_iKills", lp), get_deaths = entity.get_prop(p_res, "m_iDeaths", lp) }
                 local kdr = 0
                 if lpe.get_deaths ~= 0 then
                     local temp = lpe.get_kills / lpe.get_deaths
@@ -298,6 +295,7 @@ client.set_event_callback("paint", function()
                 draw.text(text.x + 24, text.y - 1, 255, 255, 255, a, "", 0, ":")
                 draw.text(text.x + 28, text.y, r, g, b, a, "", 0, minutes)
             elseif opts_temp == "Velocity" then
+                local vel = { y = entity.get_prop(lp, "m_vecVelocity"), x = entity.get_prop(lp, "m_vecVelocity") }
                 if vel.x ~= nil then
                     local velocity = math.sqrt(vel.x*vel.x + vel.y*vel.y)
                     velocity = math.min(9999, velocity) + 0.2
@@ -306,6 +304,7 @@ client.set_event_callback("paint", function()
                     draw.text(text.x + draw.measure_text("", velocity) + 10, text.y, 255, 255, 255, a, "", 0, "u/t")
                 end
             elseif opts_temp == "KDR" then
+                local lpe = { get_kills = entity.get_prop(p_res, "m_iKills", lp), get_deaths = entity.get_prop(p_res, "m_iDeaths", lp) }
                 local kdr = 0
                 if lpe.get_deaths ~= 0 then
                     local temp = lpe.get_kills / lpe.get_deaths
@@ -351,6 +350,7 @@ client.set_event_callback("paint", function()
                 draw.text(text.x + 24, text.y - 1, 255, 255, 255, a, "", 0, ":")
                 draw.text(text.x + 28, text.y, r, g, b, a, "", 0, minutes)
             elseif opts_temp == "Velocity" then
+                local vel = { y = entity.get_prop(lp, "m_vecVelocity"), x = entity.get_prop(lp, "m_vecVelocity") }
                 if vel.x ~= nil then
                     local velocity = math.sqrt(vel.x*vel.x + vel.y*vel.y)
                     velocity = math.min(9999, velocity) + 0.2
@@ -359,6 +359,7 @@ client.set_event_callback("paint", function()
                     draw.text(text.x + draw.measure_text("", velocity) + 10, text.y, 255, 255, 255, a, "", 0, "u/t")
                 end
             elseif opts_temp == "KDR" then
+                local lpe = { get_kills = entity.get_prop(p_res, "m_iKills", lp), get_deaths = entity.get_prop(p_res, "m_iDeaths", lp) }
                 local kdr = 0
                 if lpe.get_deaths ~= 0 then
                     local temp = lpe.get_kills / lpe.get_deaths
@@ -410,6 +411,7 @@ client.set_event_callback("paint", function()
                 draw.text(text.x + 24, text.y - 1, 255, 255, 255, a, "", 0, ":")
                 draw.text(text.x + 28, text.y, r, g, b, a, "", 0, minutes)
             elseif opts_temp == "Velocity" then
+                local vel = { y = entity.get_prop(lp, "m_vecVelocity"), x = entity.get_prop(lp, "m_vecVelocity") }
                 if vel.x ~= nil then
                     local velocity = math.sqrt(vel.x*vel.x + vel.y*vel.y)
                     velocity = math.min(9999, velocity) + 0.2
@@ -418,6 +420,7 @@ client.set_event_callback("paint", function()
                     draw.text(text.x + draw.measure_text("", velocity) + 10, text.y, 255, 255, 255, a, "", 0, "u/t")
                 end
             elseif opts_temp == "KDR" then
+                local lpe = { get_kills = entity.get_prop(p_res, "m_iKills", lp), get_deaths = entity.get_prop(p_res, "m_iDeaths", lp) }
                 local kdr = 0
                 if lpe.get_deaths ~= 0 then
                     local temp = lpe.get_kills / lpe.get_deaths
@@ -469,6 +472,7 @@ client.set_event_callback("paint", function()
                 draw.text(text.x + 24, text.y - 1, 255, 255, 255, a, "", 0, ":")
                 draw.text(text.x + 28, text.y, r, g, b, a, "", 0, minutes)
             elseif opts_temp == "Velocity" then
+                local vel = { y = entity.get_prop(lp, "m_vecVelocity"), x = entity.get_prop(lp, "m_vecVelocity") }
                 if vel.x ~= nil then
                     local velocity = math.sqrt(vel.x*vel.x + vel.y*vel.y)
                     velocity = math.min(9999, velocity) + 0.2
@@ -477,6 +481,7 @@ client.set_event_callback("paint", function()
                     draw.text(text.x + draw.measure_text("", velocity) + 10, text.y, 255, 255, 255, a, "", 0, "u/t")
                 end
             elseif opts_temp == "KDR" then
+                local lpe = { get_kills = entity.get_prop(p_res, "m_iKills", lp), get_deaths = entity.get_prop(p_res, "m_iDeaths", lp) }
                 local kdr = 0
                 if lpe.get_deaths ~= 0 then
                     local temp = lpe.get_kills / lpe.get_deaths
