@@ -146,19 +146,15 @@ function container_weirddump(x, y, w, h, header) --xDDDDD container
     end
 end
 
-client.set_event_callback("paint", function()
-    
-    if ui.get(gui.enable) then
-        ui.set_visible(gui.style, true)
-        ui.set_visible(gui.option, true)
-        ui.set_visible(gui.header, true)
-    else
-        ui.set_visible(gui.style, false)
-        ui.set_visible(gui.option, false)
-        ui.set_visible(gui.header, false)
-    end
+local function menu_things()
+    local enable_check = ui.get(gui.enable)
+    ui.set_visible(gui.style, enable_check)
+    ui.set_visible(gui.option, enable_check)
+    ui.set_visible(gui.header, enable_check)
+end
 
-end)
+ui.set_callback(gui.enable, menu_things)
+menu_things()
 
 client.set_event_callback("paint", function()
 
