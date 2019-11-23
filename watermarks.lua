@@ -161,6 +161,9 @@ client.set_event_callback("paint", function()
 end)
 
 client.set_event_callback("paint", function()
+
+    if not entity.is_alive(lp) then return end
+
     local lp_name = entity.get_player_name(lp)
     local p_res = entity.get_all("CCSPlayerResource")[1]
     local cx, cy = ui.mouse_position()
@@ -194,8 +197,6 @@ client.set_event_callback("paint", function()
 			width = width + widths[opts_temp]
 		end
 	end
-
-    if not entity.is_alive(lp) then return end
     if not ui.get(gui.enable) then return end
 
     if ui.is_menu_open() then 
