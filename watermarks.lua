@@ -255,9 +255,11 @@ client.set_event_callback("paint", function()
                 draw.text(text.x + 9, text.y, r, g, b, a, "", 0, kdr)
                 draw.text(text.x + draw.measure_text("", kdr) + 10, text.y, 255, 255, 255, a, "", 0, "k/d")
             elseif opts_temp == "FPS" then
+                fps = round(fps, 0)
                 draw.text(text.x + 9, text.y, r, g, b, a, "", 0, fps)
                 draw.text(text.x + draw.measure_text("", fps) + 11, text.y, 255, 255, 255, a, "", 0, "fps")
             elseif opts_temp == "Ping" then
+                ping = round(ping, 0)
                 draw.text(text.x + 9, text.y, r, g, b, a, "", 0, ping)
                 draw.text(text.x + draw.measure_text("", ping) + 11, text.y, 255, 255, 255, a, "", 0, "ms")
             end
@@ -315,9 +317,11 @@ client.set_event_callback("paint", function()
                 draw.text(text.x + 9, text.y, r, g, b, a, "", 0, kdr)
                 draw.text(text.x + draw.measure_text("", kdr) + 10, text.y, 255, 255, 255, a, "", 0, "k/d")
             elseif opts_temp == "FPS" then
+                fps = round(fps, 0)
                 draw.text(text.x + 9, text.y, r, g, b, a, "", 0, fps)
                 draw.text(text.x + draw.measure_text("", fps) + 11, text.y, 255, 255, 255, a, "", 0, "fps")
             elseif opts_temp == "Ping" then
+                ping = round(ping, 0)
                 draw.text(text.x + 9, text.y, r, g, b, a, "", 0, ping)
                 draw.text(text.x + draw.measure_text("", ping) + 11, text.y, 255, 255, 255, a, "", 0, "ms")
             end
@@ -370,9 +374,11 @@ client.set_event_callback("paint", function()
                 draw.text(text.x + 9, text.y, r, g, b, a, "", 0, kdr)
                 draw.text(text.x + draw.measure_text("", kdr) + 10, text.y, 255, 255, 255, a, "", 0, "k/d")
             elseif opts_temp == "FPS" then
+                fps = round(fps, 0)
                 draw.text(text.x + 9, text.y, r, g, b, a, "", 0, fps)
                 draw.text(text.x + draw.measure_text("", fps) + 11, text.y, 255, 255, 255, a, "", 0, "fps")
             elseif opts_temp == "Ping" then
+                ping = round(ping, 0)
                 draw.text(text.x + 9, text.y, r, g, b, a, "", 0, ping)
                 draw.text(text.x + draw.measure_text("", ping) + 11, text.y, 255, 255, 255, a, "", 0, "ms")
             end
@@ -431,9 +437,11 @@ client.set_event_callback("paint", function()
                 draw.text(text.x + 9, text.y, r, g, b, a, "", 0, kdr)
                 draw.text(text.x + draw.measure_text("", kdr) + 10, text.y, 255, 255, 255, a, "", 0, "k/d")
             elseif opts_temp == "FPS" then
+                fps = round(fps, 0)
                 draw.text(text.x + 9, text.y, r, g, b, a, "", 0, fps)
                 draw.text(text.x + draw.measure_text("", fps) + 11, text.y, 255, 255, 255, a, "", 0, "fps")
             elseif opts_temp == "Ping" then
+                ping = round(ping, 0)
                 draw.text(text.x + 9, text.y, r, g, b, a, "", 0, ping)
                 draw.text(text.x + draw.measure_text("", ping) + 11, text.y, 255, 255, 255, a, "", 0, "ms")
             end
@@ -492,9 +500,11 @@ client.set_event_callback("paint", function()
                 draw.text(text.x + 9, text.y, r, g, b, a, "", 0, kdr)
                 draw.text(text.x + draw.measure_text("", kdr) + 10, text.y, 255, 255, 255, a, "", 0, "k/d")
             elseif opts_temp == "FPS" then
+                fps = round(fps, 0)
                 draw.text(text.x + 9, text.y, r, g, b, a, "", 0, fps)
                 draw.text(text.x + draw.measure_text("", fps) + 11, text.y, 255, 255, 255, a, "", 0, "fps")
             elseif opts_temp == "Ping" then
+                ping = round(ping, 0)
                 draw.text(text.x + 9, text.y, r, g, b, a, "", 0, ping)
                 draw.text(text.x + draw.measure_text("", ping) + 11, text.y, 255, 255, 255, a, "", 0, "ms")
             end
