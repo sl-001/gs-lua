@@ -2,6 +2,14 @@
 
 Repository mainly for my gamesense lua scripts.
 
+### Watermark
+
+Custom made watermarks for gamesense that show your kdr, fps, username, cheats name and velocity.
+
+[Click here to redirect to the lua](https://github.com/solohvh/gs-lua/blob/master/watermarks.lua)
+
+![keys-img](https://cdn.discordapp.com/attachments/615513749838888960/647818158387757056/unknown.png)
+
 ### Keystrokes
 
 Drawing of selected keys.
