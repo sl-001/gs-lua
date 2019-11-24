@@ -182,7 +182,7 @@ client.set_event_callback("paint", function()
             widths[opts_temp] = draw.measure_text(nil, fps) + 25
         end
         if opts_temp == "Ping" then
-            widths[opts_temp] = draw.measure_text(nil, ping) + 22
+            widths[opts_temp] = draw.measure_text(nil, round(ping, 0)) + 22
         end
 		if widths[opts_temp] ~= nil then
 			width = width + widths[opts_temp]
