@@ -235,10 +235,10 @@ client.set_event_callback("paint", function()
                 draw.text(text.x + 24, text.y - 1, 255, 255, 255, a, "", 0, ":")
                 draw.text(text.x + 28, text.y, r, g, b, a, "", 0, minutes)
             elseif opts_temp == "Velocity" then
-                local vel = { y = entity.get_prop(lp, "m_vecVelocity"), x = entity.get_prop(lp, "m_vecVelocity") }
-                if vel.x ~= nil then
-                    local velocity = math.sqrt(vel.x*vel.x + vel.y*vel.y)
-                    velocity = math.min(9999, velocity) + 0.2
+                local vx, vy = entity.get_prop(lp, "m_vecVelocity")
+                if vx ~= nil then
+                    local velocity = math.sqrt(vx*vx + vy*vy)
+                    velocity = math.min(10000, velocity) + 0.5 
                     velocity = round(velocity, 0)
                     draw.text(text.x + 9, text.y, r, g, b, a, "", 0, velocity)
                     draw.text(text.x + draw.measure_text("", velocity) + 10, text.y, 255, 255, 255, a, "", 0, "u/t")
@@ -297,10 +297,10 @@ client.set_event_callback("paint", function()
                 draw.text(text.x + 24, text.y - 1, 255, 255, 255, a, "", 0, ":")
                 draw.text(text.x + 28, text.y, r, g, b, a, "", 0, minutes)
             elseif opts_temp == "Velocity" then
-                local vel = { y = entity.get_prop(lp, "m_vecVelocity"), x = entity.get_prop(lp, "m_vecVelocity") }
-                if vel.x ~= nil then
-                    local velocity = math.sqrt(vel.x*vel.x + vel.y*vel.y)
-                    velocity = math.min(9999, velocity) + 0.2
+                local vx, vy = entity.get_prop(lp, "m_vecVelocity")
+                if vx ~= nil then
+                    local velocity = math.sqrt(vx*vx + vy*vy)
+                    velocity = math.min(10000, velocity) + 0.5 
                     velocity = round(velocity, 0)
                     draw.text(text.x + 9, text.y, r, g, b, a, "", 0, velocity)
                     draw.text(text.x + draw.measure_text("", velocity) + 10, text.y, 255, 255, 255, a, "", 0, "u/t")
@@ -354,10 +354,10 @@ client.set_event_callback("paint", function()
                 draw.text(text.x + 24, text.y - 1, 255, 255, 255, a, "", 0, ":")
                 draw.text(text.x + 28, text.y, r, g, b, a, "", 0, minutes)
             elseif opts_temp == "Velocity" then
-                local vel = { y = entity.get_prop(lp, "m_vecVelocity"), x = entity.get_prop(lp, "m_vecVelocity") }
-                if vel.x ~= nil then
-                    local velocity = math.sqrt(vel.x*vel.x + vel.y*vel.y)
-                    velocity = math.min(9999, velocity) + 0.2
+                local vx, vy = entity.get_prop(lp, "m_vecVelocity")
+                if vx ~= nil then
+                    local velocity = math.sqrt(vx*vx + vy*vy)
+                    velocity = math.min(10000, velocity) + 0.5 
                     velocity = round(velocity, 0)
                     draw.text(text.x + 9, text.y, r, g, b, a, "", 0, velocity)
                     draw.text(text.x + draw.measure_text("", velocity) + 10, text.y, 255, 255, 255, a, "", 0, "u/t")
@@ -417,10 +417,10 @@ client.set_event_callback("paint", function()
                 draw.text(text.x + 24, text.y - 1, 255, 255, 255, a, "", 0, ":")
                 draw.text(text.x + 28, text.y, r, g, b, a, "", 0, minutes)
             elseif opts_temp == "Velocity" then
-                local vel = { y = entity.get_prop(lp, "m_vecVelocity"), x = entity.get_prop(lp, "m_vecVelocity") }
-                if vel.x ~= nil then
-                    local velocity = math.sqrt(vel.x*vel.x + vel.y*vel.y)
-                    velocity = math.min(9999, velocity) + 0.2
+                local vx, vy = entity.get_prop(lp, "m_vecVelocity")
+                if vx ~= nil then
+                    local velocity = math.sqrt(vx*vx + vy*vy)
+                    velocity = math.min(10000, velocity) + 0.5 
                     velocity = round(velocity, 0)
                     draw.text(text.x + 9, text.y, r, g, b, a, "", 0, velocity)
                     draw.text(text.x + draw.measure_text("", velocity) + 10, text.y, 255, 255, 255, a, "", 0, "u/t")
@@ -480,10 +480,10 @@ client.set_event_callback("paint", function()
                 draw.text(text.x + 24, text.y - 1, 255, 255, 255, a, "", 0, ":")
                 draw.text(text.x + 28, text.y, r, g, b, a, "", 0, minutes)
             elseif opts_temp == "Velocity" then
-                local vel = { y = entity.get_prop(lp, "m_vecVelocity"), x = entity.get_prop(lp, "m_vecVelocity") }
-                if vel.x ~= nil then
-                    local velocity = math.sqrt(vel.x*vel.x + vel.y*vel.y)
-                    velocity = math.min(9999, velocity) + 0.2
+                local vx, vy = entity.get_prop(lp, "m_vecVelocity")
+                if vx ~= nil then
+                    local velocity = math.sqrt(vx*vx + vy*vy)
+                    velocity = math.min(10000, velocity) + 0.5 
                     velocity = round(velocity, 0)
                     draw.text(text.x + 9, text.y, r, g, b, a, "", 0, velocity)
                     draw.text(text.x + draw.measure_text("", velocity) + 10, text.y, 255, 255, 255, a, "", 0, "u/t")
