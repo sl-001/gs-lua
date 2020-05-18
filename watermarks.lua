@@ -20,9 +20,9 @@ local menu_color = ui.reference("misc", "settings", "menu color")
 local rm, gm, bm, am = ui.get(menu_color)
 
 local int = {
-    enabled = ui.new_checkbox("lua", "a", "Watermark"),
-    color = ui.new_color_picker("lua", "a", "watermark_color", rm, gm, bm, am),
-    options = ui.new_multiselect("lua", "a", "\n", "Watermark", "Username", "Time", "FPS", "Latency", "KDR", "Velocity")
+    enabled = ui.new_checkbox("visuals", "other esp", "Watermark"),
+    color = ui.new_color_picker("visuals", "other esp", "watermark_color", rm, gm, bm, am),
+    options = ui.new_multiselect("visuals", "other esp", "\n", "Watermark", "Username", "Time", "FPS", "Latency", "KDR", "Velocity")
 }
 local widths = {
     ["Watermark"] = 65,
