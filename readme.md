@@ -8,7 +8,7 @@ Custom made watermarks for gamesense that show your kdr, fps, username, cheats n
 
 [Click here to redirect to the lua](https://github.com/solohvh/gs-lua/blob/master/watermarks.lua)
 
-![keys-img](https://cdn.discordapp.com/attachments/615513749838888960/647818158387757056/unknown.png)
+![keys-img](https://i.imgur.com/id91VIb.png)
 
 ### Keystrokes
 
