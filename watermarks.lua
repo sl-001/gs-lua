@@ -30,8 +30,8 @@ local widths = {
     ["Time"] = 40,
     ["Velocity"] = 50,
     ["KDR"] = 50,
-    ["FPS"] = 40,
-    ["Latency"] = 35,
+	["FPS"] = 40,
+	["Latency"] = 35,
 }
 
 -- round to whole number
@@ -134,7 +134,7 @@ local function on_paint()
             widths[option] = measure_text("", fps) + measure_text("-", "  FPS") + 9
 		end
 		if option == "Latency" then
-            widths[option] = measure_text("", round(latency, 1)) + measure_text("-", "  PING") + 9
+            widths[option] = measure_text("", tointeger(latency)) + measure_text("-", "  PING") + 9
 		end
 		if option == "KDR" then
             widths[option] = measure_text("", kdr) + measure_text("-", "  KDR") + 9
@@ -187,8 +187,8 @@ local function on_paint()
 					ping.g = g
 					ping.b = b
 				end
-				text(txt.x, txt.y, 255, 255, 255, 255, "", 0, round(latency, 1))
-				text(txt.x+measure_text("", round(latency, 1)), txt.y+3, ping.r, ping.g, ping.b, ping.a, "-", 0, " PING")
+				text(txt.x, txt.y, 255, 255, 255, 255, "", 0, tointeger(latency))
+				text(txt.x+measure_text("", tointeger(latency)), txt.y+3, ping.r, ping.g, ping.b, ping.a, "-", 0, " PING")
 			elseif option == "KDR" then
 				local kdrc = { r, g, b, a = 255 }
 				if resources.get_kills < resources.get_deaths then
