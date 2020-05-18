@@ -22,7 +22,7 @@ local rm, gm, bm, am = ui.get(menu_color)
 local int = {
     enabled = ui.new_checkbox("visuals", "other esp", "Watermark"),
     color = ui.new_color_picker("visuals", "other esp", "watermark_color", rm, gm, bm, am),
-    options = ui.new_multiselect("visuals", "other esp", "\n", "Watermark", "Username", "Time", "FPS", "Latency", "KDR", "Velocity")
+    options = ui.new_multiselect("visuals", "other esp", "\n", "Watermark", "Username", "Time", "FPS", "Latency", "KDR", "Velocity", "Server tickrate")
 }
 local widths = {
     ["Watermark"] = 65,
@@ -30,8 +30,9 @@ local widths = {
     ["Time"] = 40,
     ["Velocity"] = 50,
     ["KDR"] = 50,
-    ["FPS"] = 40,
-    ["Latency"] = 35,
+	["FPS"] = 40,
+	["Latency"] = 35,
+	["Server tickrate"] = 45
 }
 
 -- round to whole number
@@ -148,6 +149,9 @@ local function on_paint()
 		if option == "Time" then
 			widths[option] = measure_text("", hours .. ":" .. minutes .. timess) + 9
 		end
+		if option == "Server tickrate" then
+			widths[option] = measure_text("", 1 / get_tickinterval()) + measure_text("-", "  TICKS") + 9
+		end
         if widths[option] ~= nil then
             width = width + widths[option]
         end
@@ -160,7 +164,7 @@ local function on_paint()
 			local option = options[i]
 			if option == "FPS" then
 				local fpsc = { r, g, b, a = 255 }
-				if fps < 64 then 
+				if fps < (1 / get_tickinterval()) then 
 					fpsc.r = 255
 					fpsc.g = 50
 					fpsc.b = 50
@@ -210,6 +214,9 @@ local function on_paint()
 				text(txt.x+measure_text("", hours), txt.y, 255, 255, 255, 255, "", 0, ":")
 				text(txt.x+measure_text("", hours .. ":"), txt.y, 255, 255, 255, 255, "", 0, minutes)
 				text(txt.x+measure_text("", hours .. ":" .. minutes), txt.y+3, r, g, b, 255, "-", 0, timess)
+			elseif option == "Server tickrate" then
+				text(txt.x, txt.y, 255, 255, 255, 255, "", 0, 1 / get_tickinterval())
+				text(txt.x+measure_text("", 1 / get_tickinterval()), txt.y+3, r, g, b, 255, "-", 0, " TICKS")
 			end
 
 			if widths[option] ~= nil then
