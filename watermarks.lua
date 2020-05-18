@@ -30,8 +30,8 @@ local widths = {
     ["Time"] = 40,
     ["Velocity"] = 50,
     ["KDR"] = 50,
-	["FPS"] = 40,
-	["Latency"] = 35,
+    ["FPS"] = 40,
+    ["Latency"] = 35,
 }
 
 -- round to whole number
