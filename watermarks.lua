@@ -1,59 +1,46 @@
-local options = { "Text", "Username", "Time", "Velocity", "KDR", "FPS", "Ping" }
-local styles = { "Gamesense", "Custom", "Dump", "Dump 2", "Trash" }
-local w, h = client.screen_size()
+local bit = require "bit"
+
+-- cache common functions
+local renderer = renderer
+local gradient, rectangle, text, measure_text = renderer.gradient, renderer.rectangle, renderer.text, renderer.measure_text
+local get_screen_size, get_latency, get_system_time = client.screen_size, client.latency, client.system_time
+local get_absoluteframetime, get_tickinterval, get_realtime = globals.absoluteframetime, globals.tickinterval, globals.realtime
+local get_local_player, get_prop, get_name, get_all = entity.get_local_player, entity.get_prop, entity.get_player_name, entity.get_all
+local min, max, abs, sqrt, floor = math.min, math.max, math.abs, math.sqrt, math.floor
+local band, bnot, bor = bit.band, bit.bnot, bit.bor
+
 local frametimes = {}
 local fps_prev = 0
 local value_prev = {}
 local last_update_time = 0
-local gui = {
-    enable = ui.new_checkbox("lua", "a", "Watermark"),
-    accent = ui.new_color_picker("lua", "a", "accent", 127, 176, 0, 255),
-    style = ui.new_combobox("lua", "a", "\n", styles),
-    option = ui.new_multiselect("lua", "a", "\n\n", options),
-    header = ui.new_checkbox("lua", "a", "Header")
-}
-local draw = {
-    box = renderer.rectangle,
-    line = renderer.line,
-    text = renderer.text,
-    measure_text = renderer.measure_text,
-    gradient = renderer.gradient
-}
-local wnd = {
-    x = database.read("ks_x") or w - 10,
-    y = database.read("ks_y") or 10,
-    dragging = false
+
+local wdei, hdei = get_screen_size()
+local scr = { w = wdei, h = hdei }
+local menu_color = ui.reference("misc", "settings", "menu color")
+local rm, gm, bm, am = ui.get(menu_color)
+
+local int = {
+    enabled = ui.new_checkbox("lua", "a", "Watermark"),
+    color = ui.new_color_picker("lua", "a", "watermark_color", rm, gm, bm, am),
+    options = ui.new_multiselect("lua", "a", "\n", "Watermark", "Username", "Time", "FPS", "Latency", "KDR", "Velocity")
 }
 local widths = {
-    ["Text"] = 65,
+    ["Watermark"] = 65,
     ["Username"] = 10,
     ["Time"] = 40,
     ["Velocity"] = 50,
     ["KDR"] = 50,
-	["FPS"] = 40,
-	["Ping"] = 40,
+    ["FPS"] = 40,
+    ["Latency"] = 35,
 }
 
-local function intersect(x, y, w, h, debug) 
-    local cx, cy = ui.mouse_position()
-    debug = debug or false
-    if debug then 
-        renderer.rectangle(x, y, w, h, 255, 0, 0, 50)
-    end
-    return cx >= x and cx <= x + w and cy >= y and cy <= y + h
+-- round to whole number
+local function tointeger(n)
+	return floor(n + 0.5)
 end
 
-local function contains(table, val) --thanks sapphyrus
-    for i = 1, #table do
-        if table[i] == val then
-            return true
-        end
-    end
-    return false
-end
-
-local function accumulate_fps()
-	local rt, ft = globals.realtime(), globals.absoluteframetime()
+local function accumulate_fps() -- stolen from estk
+	local rt, ft = get_realtime(), get_absoluteframetime()
 
 	if ft > 0 then
 		table.insert(frametimes, 1, ft)
@@ -83,442 +70,158 @@ local function accumulate_fps()
 
 	local fps = 1 / accum
 	local time_since_update = rt - last_update_time
-	if math.abs(fps - fps_prev) > 4 or time_since_update > 1 then
+	if abs(fps - fps_prev) > 4 or time_since_update > 1 then
 		fps_prev = fps
 		last_update_time = rt
 	else
 		fps = fps_prev
 	end
 
-	return math.floor(fps + 0.5)
+	return floor(fps + 0.5)
 end
 
-local function round(num, numDecimalPlaces)
-	local mult = 10^(numDecimalPlaces or 0)
-	return math.floor(num * mult + 0.5) / mult
-end
-
-function container_gs(x, y, w, h, header) --gamesense container
-    local c = {10, 60, 40, 40, 40, 60, 20}
-    for i = 0,6,1 do
-        draw.box(x+i, y+i, w-(i*2), 29-(i*2), c[i+1], c[i+1], c[i+1], 255)
+local function contains(tbl, val)
+    for i = 1, #tbl do
+        if tbl[i] == val then return true end
     end
-
-    if header == true then
-        draw.gradient(x + 7, y + 7, w/2, 1, 59, 175, 222, 255, 202, 70, 205, 255, true)
-        draw.gradient(x + w/2, y + 7, w/2 - 7, 1, 202, 70, 205, 255, 201, 227, 58, 255, true)
-    end
+    return false
 end
 
-function container_custom(x, y, w, h, header) --custom container
-    draw.box(x, y, w, h, 46, 43, 50, 200)
-
-    if header == true then
-        draw.gradient(x + 2, y + 2, w/2, 1, 59, 175, 222, 255, 202, 70, 205, 255, true)
-        draw.gradient(x + (w/2) - 1, y + 2, (w/2) - 2, 1, 202, 70, 205, 255, 201, 227, 58, 255, true)
-    end
+local function container(x, y, w, h)
+    local r, g, b, a = ui.get(int.color)
+    rectangle(x, y, w, h, 30, 30, 30, 200)
+    rectangle(x+1, y+1, w-2, 1, r, g, b, 255)
+end
+local draw = { container = container }
+local function round(num, numdec)
+	return floor(num * (10^(numdec or 0)) + 0.5) / 10^(numdec or 0)
 end
 
-function container_dump(x, y, w, h)
-    draw.box(x, y, w, h, 207, 106, 128, 110)
-end
+local function on_paint()
+	local width, height = 3, 18
+	local p_res = get_all("CCSPlayerResource")[1]
+	local options = ui.get(int.options)
+	local latency = min(999, get_latency() * 1000)
+	local fps = accumulate_fps()
+	local r, g, b, a = ui.get(int.color)
+	local me = get_local_player()
+	local name = get_name(me)
+	local vx, vy = get_prop(me, "m_vecVelocity")
+	local hours, minutes, seconds, milliseconds = get_system_time()
+	local timess = "AM"
+	local velocity
+	local kdr
+	local resources = { get_kills = get_prop(p_res, "m_iKills", me), get_deaths = get_prop(p_res, "m_iDeaths", me) }
+	if string.len(name) > 20 then name = string.sub(get_name(me), -21) end
 
-function container_oc(x, y, w, h, header) --oneclap (dump2) container
-    local r, g, b, a = ui.get(gui.accent)
-    draw.box(x, y, w, h, 56, 53, 60, 255)
-
-    if header == true then
-        draw.box(x, y, w, 3, r, g, b, a)
-    end
-end
-
-function container_weirddump(x, y, w, h, header) --xDDDDD container
-    local r, g, b, a = ui.get(gui.accent)
-    draw.box(x, y, w, h, 100, 100, 100, 150)
-    draw.line(x - 1, y - 1, (w+x), y - 1, 0, 0, 0, 255)
-    draw.line(x - 1, (h+y), (w+x), (h+y), 0, 0, 0, 255)
-    draw.line(x - 1, y - 1, x - 1, (h+y), 0, 0, 0, 255)
-    draw.line((w+x), y - 1, (w+x), (h+y), 0, 0, 0, 255)
-
-    if header == true then
-        draw.box(x + 1, y + 1, w - 2, 1, r, g, b, a)
-    end
-end
-
-local function menu_things()
-    local enable_check = ui.get(gui.enable)
-    ui.set_visible(gui.style, enable_check)
-    ui.set_visible(gui.option, enable_check)
-    ui.set_visible(gui.header, enable_check)
-end
-
-ui.set_callback(gui.enable, menu_things)
-menu_things()
-
-client.set_event_callback("paint", function()
-    local lp = entity.get_local_player()
-    local lp_name = entity.get_player_name(lp)
-    local p_res = entity.get_all("CCSPlayerResource")[1]
-    local cx, cy = ui.mouse_position()
-    local header_c = ui.get(gui.header)
-    local opts = ui.get(gui.option)
-    local style = ui.get(gui.style)
-    local ping = math.min(999, client.latency() * 1000)
-    local fps = accumulate_fps()
-    local hours, minutes, seconds, milliseconds = client.system_time()
-    hours, minutes = string.format("%02d", hours), string.format("%02d", minutes)
-    local width = 13
-
-    if #opts == 0 then
-		return
+	if hours > 12 then 
+		hours = hours-12
+		timess = "PM"
 	end
+	if minutes < 10 then minutes = "0" .. minutes end
 
-    for i=1, #opts do
-        local opts_temp = opts[i]
-        if opts_temp == "Username" then
-			widths[opts_temp] = draw.measure_text(nil, entity.get_player_name(lp)) + 7
-        end
-        if opts_temp == "FPS" then
-            widths[opts_temp] = draw.measure_text(nil, fps) + 25
-        end
-        if opts_temp == "Ping" then
-            widths[opts_temp] = draw.measure_text(nil, round(ping, 0)) + 22
-        end
-		if widths[opts_temp] ~= nil then
-			width = width + widths[opts_temp]
+	if resources.get_deaths ~= 0 then
+		local temp = resources.get_kills / resources.get_deaths
+		kdr = round(temp, 2)
+	elseif resources.get_kills ~= 0 then
+		kdr = resources.get_kills
+	else kdr = 0 end
+	velocity = vx and tointeger(min(10000, sqrt(vx*vx + vy*vy))) or 0
+
+    for i=1, #options do
+		local option = options[i]
+        if option == "FPS" then
+            widths[option] = measure_text("", fps) + measure_text("-", "  FPS") + 9
 		end
+		if option == "Latency" then
+            widths[option] = measure_text("", round(latency, 1)) + measure_text("-", "  PING") + 9
+		end
+		if option == "KDR" then
+            widths[option] = measure_text("", kdr) + measure_text("-", "  KDR") + 9
+		end
+		if option == "Velocity" then
+            widths[option] = measure_text("", velocity) + measure_text("-", "  U/T") + 9
+		end
+		if option == "Username" then
+			widths[option] = measure_text("", name) + 9
+		end
+		if option == "Time" then
+			widths[option] = measure_text("", hours .. ":" .. minutes .. timess) + 9
+		end
+        if widths[option] ~= nil then
+            width = width + widths[option]
+        end
 	end
-    if not ui.get(gui.enable) then return end
+	local txt = { x = scr.w-width, y = 9 }
 
-    if ui.is_menu_open() then 
-        
-        if wnd.dragging and not client.key_state(0x01) then
-            wnd.dragging = false
-        end
-    
-        if wnd.dragging and client.key_state(0x01) then
-            wnd.x = cx - wnd.drag_x
-            wnd.y = cy - wnd.drag_y
-        end
-    
-        if intersect(wnd.x - width, wnd.y, width, 20) and client.key_state(0x01) then 
-            wnd.dragging = true
-            wnd.drag_x = cx - wnd.x
-            wnd.drag_y = cy - wnd.y
-        end
+    if ui.get(int.enabled) then
+		draw.container(scr.w-width-5, 5, width, height)
+		for i=1, #options do
+			local option = options[i]
+			if option == "FPS" then
+				local fpsc = { r, g, b, a = 255 }
+				if fps < 64 then 
+					fpsc.r = 255
+					fpsc.g = 50
+					fpsc.b = 50
+				else
+					fpsc.r = r
+					fpsc.g = g
+					fpsc.b = b
+				end
+				text(txt.x, txt.y, 255, 255, 255, 255, "", 0, fps)
+				text(txt.x+measure_text("", fps), txt.y+3, fpsc.r, fpsc.g, fpsc.b, fpsc.a, "-", 0, "FPS")
+			elseif option == "Username" then
+				text(txt.x, txt.y, 255, 255, 255, 255, "", 0, name)
+			elseif option == "Watermark" then
+				text(txt.x, txt.y-1, 255, 255, 255, 255, "", 0, "game")
+				text(txt.x+measure_text("", "game"), txt.y-1, r, g, b, 255, "", 0, "sense")
+			elseif option == "Latency" then
+				local ping = { r, g, b, a = 255 }
+				if latency > 60 then 
+					ping.r = 255
+					ping.g = 50
+					ping.b = 50
+				else
+					ping.r = r
+					ping.g = g
+					ping.b = b
+				end
+				text(txt.x, txt.y, 255, 255, 255, 255, "", 0, round(latency, 1))
+				text(txt.x+measure_text("", round(latency, 1)), txt.y+3, ping.r, ping.g, ping.b, ping.a, "-", 0, " PING")
+			elseif option == "KDR" then
+				local kdrc = { r, g, b, a = 255 }
+				if resources.get_kills < resources.get_deaths then
+					kdrc.r = 255
+					kdrc.g = 50
+					kdrc.b = 50
+				else
+					kdrc.r = r
+					kdrc.g = g
+					kdrc.b = b
+				end
+				text(txt.x, txt.y, 255, 255, 255, 255, "", 0, kdr)
+				text(txt.x+measure_text("", kdr), txt.y+3, kdrc.r, kdrc.g, kdrc.b, kdrc.a, "-", 0, " KDR")
+			elseif option == "Velocity" then
+				text(txt.x, txt.y, 255, 255, 255, 255, "", 0, velocity)
+				text(txt.x+measure_text("", velocity), txt.y+3, r, g, b, 255, "-", 0, " U/T")
+			elseif option == "Time" then
+				text(txt.x, txt.y, 255, 255, 255, 255, "", 0, hours)
+				text(txt.x+measure_text("", hours), txt.y, 255, 255, 255, 255, "", 0, ":")
+				text(txt.x+measure_text("", hours .. ":"), txt.y, 255, 255, 255, 255, "", 0, minutes)
+				text(txt.x+measure_text("", hours .. ":" .. minutes), txt.y+3, r, g, b, 255, "-", 0, timess)
+			end
 
+			if widths[option] ~= nil then
+                txt.x = txt.x + widths[option]
+			end
+			if #options > i then
+                text(txt.x-10, txt.y-1, 255, 255, 255, 255, "", 0, " | ")
+            end
+		end
     end
 
-    if style == "Gamesense" then
-        local r, g, b, a = ui.get(gui.accent)
-        local text = { x = wnd.x - width, y = wnd.y + 8 }
+    if #options == 0 then return end
+end
 
-        if ui.get(gui.header) then
-            container_gs(wnd.x - width, wnd.y, width, 22, true)
-            text.y = text.y + 1
-        else
-            container_gs(wnd.x - width, wnd.y, width, 20, false)
-        end
-
-        if a < 30 then a = 30 end
-
-        for i=1, #opts do
-
-            local opts_temp = opts[i]
-            if opts_temp == "Text" then
-                draw.text(text.x + 10, text.y, 255, 255, 255, a, "", 0, "game")
-                draw.text(text.x + draw.measure_text("", "game") + 10, text.y, r, g, b, a, "", 0, "sense")
-            elseif opts_temp == "Username" then
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, entity.get_player_name(lp))
-            elseif opts_temp == "Time" then
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, hours)
-                draw.text(text.x + 24, text.y - 1, 255, 255, 255, a, "", 0, ":")
-                draw.text(text.x + 28, text.y, r, g, b, a, "", 0, minutes)
-            elseif opts_temp == "Velocity" then
-                local vx, vy = entity.get_prop(lp, "m_vecVelocity")
-                if vx ~= nil then
-                    local velocity = math.sqrt(vx*vx + vy*vy)
-                    velocity = math.min(10000, velocity) + 0.5 
-                    velocity = round(velocity, 0)
-                    draw.text(text.x + 9, text.y, r, g, b, a, "", 0, velocity)
-                    draw.text(text.x + draw.measure_text("", velocity) + 10, text.y, 255, 255, 255, a, "", 0, "u/t")
-                end
-            elseif opts_temp == "KDR" then
-                local lpe = { get_kills = entity.get_prop(p_res, "m_iKills", lp), get_deaths = entity.get_prop(p_res, "m_iDeaths", lp) }
-                local kdr = 0
-                if lpe.get_deaths ~= 0 then
-                    local temp = lpe.get_kills / lpe.get_deaths
-                    kdr = round(temp, 2)
-                elseif lpe.get_kills ~= 0 then
-                    kdr = lpe.get_kills
-                end
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, kdr)
-                draw.text(text.x + draw.measure_text("", kdr) + 10, text.y, 255, 255, 255, a, "", 0, "k/d")
-            elseif opts_temp == "FPS" then
-                fps = round(fps, 0)
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, fps)
-                draw.text(text.x + draw.measure_text("", fps) + 11, text.y, 255, 255, 255, a, "", 0, "fps")
-            elseif opts_temp == "Ping" then
-                ping = round(ping, 0)
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, ping)
-                draw.text(text.x + draw.measure_text("", ping) + 11, text.y, 255, 255, 255, a, "", 0, "ms")
-            end
-
-            if widths[opts_temp] ~= nil then
-                text.x = text.x + widths[opts_temp]
-            end
-
-            if #opts > i then
-                renderer.text(text.x, text.y, 255, 255, 255, a, nil, 0, " | ")
-            end
-        end
-
-    elseif style == "Custom" then
-        local r, g, b, a = ui.get(gui.accent)
-        local text = { x = wnd.x - width, y = wnd.y + 4 }
-
-        if ui.get(gui.header) then
-            container_custom(wnd.x - width, wnd.y, width, 22, true)
-            text.y = text.y + 1
-        else
-            container_custom(wnd.x - width, wnd.y, width, 20, false)
-        end
-
-        for i=1, #opts do
-
-            local opts_temp = opts[i]
-            if opts_temp == "Text" then
-                draw.text(text.x + 6, text.y, 255, 255, 255, a, "", 0, "game")
-                draw.text(text.x + draw.measure_text("", "game") + 6, text.y, r, g, b, a, "", 0, "sense")
-            elseif opts_temp == "Username" then
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, entity.get_player_name(lp))
-            elseif opts_temp == "Time" then
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, hours)
-                draw.text(text.x + 24, text.y - 1, 255, 255, 255, a, "", 0, ":")
-                draw.text(text.x + 28, text.y, r, g, b, a, "", 0, minutes)
-            elseif opts_temp == "Velocity" then
-                local vx, vy = entity.get_prop(lp, "m_vecVelocity")
-                if vx ~= nil then
-                    local velocity = math.sqrt(vx*vx + vy*vy)
-                    velocity = math.min(10000, velocity) + 0.5 
-                    velocity = round(velocity, 0)
-                    draw.text(text.x + 9, text.y, r, g, b, a, "", 0, velocity)
-                    draw.text(text.x + draw.measure_text("", velocity) + 10, text.y, 255, 255, 255, a, "", 0, "u/t")
-                end
-            elseif opts_temp == "KDR" then
-                local lpe = { get_kills = entity.get_prop(p_res, "m_iKills", lp), get_deaths = entity.get_prop(p_res, "m_iDeaths", lp) }
-                local kdr = 0
-                if lpe.get_deaths ~= 0 then
-                    local temp = lpe.get_kills / lpe.get_deaths
-                    kdr = round(temp, 2)
-                elseif lpe.get_kills ~= 0 then
-                    kdr = lpe.get_kills
-                end
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, kdr)
-                draw.text(text.x + draw.measure_text("", kdr) + 10, text.y, 255, 255, 255, a, "", 0, "k/d")
-            elseif opts_temp == "FPS" then
-                fps = round(fps, 0)
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, fps)
-                draw.text(text.x + draw.measure_text("", fps) + 11, text.y, 255, 255, 255, a, "", 0, "fps")
-            elseif opts_temp == "Ping" then
-                ping = round(ping, 0)
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, ping)
-                draw.text(text.x + draw.measure_text("", ping) + 11, text.y, 255, 255, 255, a, "", 0, "ms")
-            end
-
-            if widths[opts_temp] ~= nil then
-                text.x = text.x + widths[opts_temp]
-            end
-
-            if #opts > i then
-                renderer.text(text.x, text.y, 255, 255, 255, a, nil, 0, " | ")
-            end
-
-        end
-    
-    elseif style == "Dump" then
-        local r, g, b, a = ui.get(gui.accent)
-        local text = { x = wnd.x - width, y = wnd.y + 5 }
-        container_dump(wnd.x - width, wnd.y, width, 20, false)
-
-        for i=1, #opts do
-
-            local opts_temp = opts[i]
-            if opts_temp == "Text" then
-                draw.text(text.x + 6, text.y, 255, 255, 255, a, "", 0, "game")
-                draw.text(text.x + draw.measure_text("", "game") + 6, text.y, r, g, b, a, "", 0, "sense")
-            elseif opts_temp == "Username" then
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, entity.get_player_name(lp))
-            elseif opts_temp == "Time" then
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, hours)
-                draw.text(text.x + 24, text.y - 1, 255, 255, 255, a, "", 0, ":")
-                draw.text(text.x + 28, text.y, r, g, b, a, "", 0, minutes)
-            elseif opts_temp == "Velocity" then
-                local vx, vy = entity.get_prop(lp, "m_vecVelocity")
-                if vx ~= nil then
-                    local velocity = math.sqrt(vx*vx + vy*vy)
-                    velocity = math.min(10000, velocity) + 0.5 
-                    velocity = round(velocity, 0)
-                    draw.text(text.x + 9, text.y, r, g, b, a, "", 0, velocity)
-                    draw.text(text.x + draw.measure_text("", velocity) + 10, text.y, 255, 255, 255, a, "", 0, "u/t")
-                end
-            elseif opts_temp == "KDR" then
-                local lpe = { get_kills = entity.get_prop(p_res, "m_iKills", lp), get_deaths = entity.get_prop(p_res, "m_iDeaths", lp) }
-                local kdr = 0
-                if lpe.get_deaths ~= 0 then
-                    local temp = lpe.get_kills / lpe.get_deaths
-                    kdr = round(temp, 2)
-                elseif lpe.get_kills ~= 0 then
-                    kdr = lpe.get_kills
-                end
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, kdr)
-                draw.text(text.x + draw.measure_text("", kdr) + 10, text.y, 255, 255, 255, a, "", 0, "k/d")
-            elseif opts_temp == "FPS" then
-                fps = round(fps, 0)
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, fps)
-                draw.text(text.x + draw.measure_text("", fps) + 11, text.y, 255, 255, 255, a, "", 0, "fps")
-            elseif opts_temp == "Ping" then
-                ping = round(ping, 0)
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, ping)
-                draw.text(text.x + draw.measure_text("", ping) + 11, text.y, 255, 255, 255, a, "", 0, "ms")
-            end
-
-            if widths[opts_temp] ~= nil then
-                text.x = text.x + widths[opts_temp]
-            end
-
-            if #opts > i then
-                renderer.text(text.x, text.y, 255, 255, 255, a, nil, 0, " / ")
-            end
-
-        end
-
-    elseif style == "Dump 2" then
-        local r, g, b, a = ui.get(gui.accent)
-        local text = { x = wnd.x - width, y = wnd.y + 4 }
-
-        if ui.get(gui.header) then
-            container_oc(wnd.x - width, wnd.y, width, 22, true)
-            text.y = text.y + 1
-        else
-            container_oc(wnd.x - width, wnd.y, width, 20, false)
-        end
-
-        for i=1, #opts do
-
-            local opts_temp = opts[i]
-            if opts_temp == "Text" then
-                draw.text(text.x + 6, text.y, 255, 255, 255, a, "", 0, "game")
-                draw.text(text.x + draw.measure_text("", "game") + 6, text.y, r, g, b, a, "", 0, "sense")
-            elseif opts_temp == "Username" then
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, entity.get_player_name(lp))
-            elseif opts_temp == "Time" then
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, hours)
-                draw.text(text.x + 24, text.y - 1, 255, 255, 255, a, "", 0, ":")
-                draw.text(text.x + 28, text.y, r, g, b, a, "", 0, minutes)
-            elseif opts_temp == "Velocity" then
-                local vx, vy = entity.get_prop(lp, "m_vecVelocity")
-                if vx ~= nil then
-                    local velocity = math.sqrt(vx*vx + vy*vy)
-                    velocity = math.min(10000, velocity) + 0.5 
-                    velocity = round(velocity, 0)
-                    draw.text(text.x + 9, text.y, r, g, b, a, "", 0, velocity)
-                    draw.text(text.x + draw.measure_text("", velocity) + 10, text.y, 255, 255, 255, a, "", 0, "u/t")
-                end
-            elseif opts_temp == "KDR" then
-                local lpe = { get_kills = entity.get_prop(p_res, "m_iKills", lp), get_deaths = entity.get_prop(p_res, "m_iDeaths", lp) }
-                local kdr = 0
-                if lpe.get_deaths ~= 0 then
-                    local temp = lpe.get_kills / lpe.get_deaths
-                    kdr = round(temp, 2)
-                elseif lpe.get_kills ~= 0 then
-                    kdr = lpe.get_kills
-                end
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, kdr)
-                draw.text(text.x + draw.measure_text("", kdr) + 10, text.y, 255, 255, 255, a, "", 0, "k/d")
-            elseif opts_temp == "FPS" then
-                fps = round(fps, 0)
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, fps)
-                draw.text(text.x + draw.measure_text("", fps) + 11, text.y, 255, 255, 255, a, "", 0, "fps")
-            elseif opts_temp == "Ping" then
-                ping = round(ping, 0)
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, ping)
-                draw.text(text.x + draw.measure_text("", ping) + 11, text.y, 255, 255, 255, a, "", 0, "ms")
-            end
-
-            if widths[opts_temp] ~= nil then
-                text.x = text.x + widths[opts_temp]
-            end
-
-            if #opts > i then
-                renderer.text(text.x, text.y, 255, 255, 255, a, nil, 0, " | ")
-            end
-
-        end
-
-    elseif style == "Trash" then
-        local r, g, b, a = ui.get(gui.accent)
-        local text = { x = wnd.x - width, y = wnd.y + 4 }
-
-        if ui.get(gui.header) then
-            container_weirddump(wnd.x - width, wnd.y, width, 22, true)
-            text.y = text.y + 1
-        else
-            container_weirddump(wnd.x - width, wnd.y, width, 20, false)
-        end
-
-        for i=1, #opts do
-
-            local opts_temp = opts[i]
-            if opts_temp == "Text" then
-                draw.text(text.x + 6, text.y, 255, 255, 255, a, "", 0, "game")
-                draw.text(text.x + draw.measure_text("", "game") + 6, text.y, r, g, b, a, "", 0, "sense")
-            elseif opts_temp == "Username" then
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, entity.get_player_name(lp))
-            elseif opts_temp == "Time" then
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, hours)
-                draw.text(text.x + 24, text.y - 1, 255, 255, 255, a, "", 0, ":")
-                draw.text(text.x + 28, text.y, r, g, b, a, "", 0, minutes)
-            elseif opts_temp == "Velocity" then
-                local vx, vy = entity.get_prop(lp, "m_vecVelocity")
-                if vx ~= nil then
-                    local velocity = math.sqrt(vx*vx + vy*vy)
-                    velocity = math.min(10000, velocity) + 0.5 
-                    velocity = round(velocity, 0)
-                    draw.text(text.x + 9, text.y, r, g, b, a, "", 0, velocity)
-                    draw.text(text.x + draw.measure_text("", velocity) + 10, text.y, 255, 255, 255, a, "", 0, "u/t")
-                end
-            elseif opts_temp == "KDR" then
-                local lpe = { get_kills = entity.get_prop(p_res, "m_iKills", lp), get_deaths = entity.get_prop(p_res, "m_iDeaths", lp) }
-                local kdr = 0
-                if lpe.get_deaths ~= 0 then
-                    local temp = lpe.get_kills / lpe.get_deaths
-                    kdr = round(temp, 2)
-                elseif lpe.get_kills ~= 0 then
-                    kdr = lpe.get_kills
-                end
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, kdr)
-                draw.text(text.x + draw.measure_text("", kdr) + 10, text.y, 255, 255, 255, a, "", 0, "k/d")
-            elseif opts_temp == "FPS" then
-                fps = round(fps, 0)
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, fps)
-                draw.text(text.x + draw.measure_text("", fps) + 11, text.y, 255, 255, 255, a, "", 0, "fps")
-            elseif opts_temp == "Ping" then
-                ping = round(ping, 0)
-                draw.text(text.x + 9, text.y, r, g, b, a, "", 0, ping)
-                draw.text(text.x + draw.measure_text("", ping) + 11, text.y, 255, 255, 255, a, "", 0, "ms")
-            end
-
-            if widths[opts_temp] ~= nil then
-                text.x = text.x + widths[opts_temp]
-            end
-
-            if #opts > i then
-                renderer.text(text.x, text.y, 255, 255, 255, a, nil, 0, " | ")
-            end
-
-        end
-
-    end
-
-end)
+client.set_event_callback("paint", on_paint)
