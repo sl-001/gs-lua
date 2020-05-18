@@ -113,7 +113,7 @@ local function on_paint()
 	local velocity
 	local kdr
 	local resources = { get_kills = get_prop(p_res, "m_iKills", me), get_deaths = get_prop(p_res, "m_iDeaths", me) }
-	if string.len(name) > 20 then name = string.sub(get_name(me), -21) end
+	if string.len(name) > 20 then name = string.sub(get_name(me), 0, 21) end
 
 	if hours > 12 then 
 		hours = hours-12
