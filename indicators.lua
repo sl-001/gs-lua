@@ -18,6 +18,8 @@ local old_simulation_time = 0
 local fdk = ui.reference( "rage", "other", "duck peek assist" )
 local dtap, dtk = ui.reference( "rage", "other", "double tap" )
 local fl_am = ui.reference( "aa", "fake lag", "limit" )
+local aa_enabled = ui.reference( "aa", "anti-aimbot angles", "enabled" )
+local byaw = ui.reference( "aa", "anti-aimbot angles", "body yaw" )
 local max_choked_ticks = ui.reference( "MISC", "Settings", "sv_maxusrcmdprocessticks" )
 local angle = 0
 
@@ -124,11 +126,7 @@ event_callback( "setup_command", function( cmd )
 	    old_simulation_time = simulation_time
     end
     if cmd.chokedcommands == 0 then
-		if cmd.in_use == 1 then
-			angle = 0
-		else
-			angle = min( 57, abs( get_prop( get_local_player( ), "m_flPoseParameter", 11 )*120-60 ) )
-		end
+		angle = cmd.in_use == 0 and ui.get( aa_enabled ) and ui.get( byaw ) ~= "Off" and min( 57, abs( get_prop( get_local_player( ), "m_flPoseParameter", 11 )*120-60 ) ) or 0
 	end
 end )
 
