@@ -149,8 +149,6 @@ local function on_paint( )
     local velocity_prop = vec_3( entity.get_prop( get_local_player( ), "m_vecVelocity" ) )
     local velocity = sqrt( velocity_prop.x * velocity_prop.x + velocity_prop.y * velocity_prop.y )
     local trace_fraction, trace_entity = client.trace_line( 1, origin.x, origin.y, origin.z, origin.x, origin.y, origin.z - 24.97 )
-    local lby = entity.get_prop( get_local_player( ), "m_flLowerBodyYawTarget" )
-    local abs_rotation = vec_3( get_prop( get_local_player( ), "m_angAbsRotation" ) )
     local bar_max, bar_fake = 9, tointeger( angle )/6.666666666666667
     local bar_ticks = tointeger( choked_ticks/1.5 )
     local lc = { r = 255, g = 0, b = 0, state = false }
