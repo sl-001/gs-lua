@@ -127,7 +127,7 @@ event_callback( "setup_command", function( cmd )
 		if cmd.in_use == 1 then
 			angle = 0
 		else
-			angle = math.min( 57, math.abs( get_prop( get_local_player( ), "m_flPoseParameter", 11 )*120-60 ) )
+			angle = min( 57, math.abs( get_prop( get_local_player( ), "m_flPoseParameter", 11 )*120-60 ) )
 		end
 	end
 end )
