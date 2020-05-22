@@ -137,6 +137,7 @@ local function on_paint( )
     for i = 1, 50 do
         renderer.indicator( 255, 255, 255, 0, i)
     end
+    if entity.is_alive( get_local_player( ) ) ~= true then choked_ticks = 0 end
 
     local r, g, b, a = ui.get( int.color )
     local left_click = client.key_state( 0x01 )
