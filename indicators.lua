@@ -89,12 +89,13 @@ local function conta( x, y, w, h )
 end
 local function rendind( x, y, max, value, size, r, g, b, a, name )
     if value > 1 then value = value + 1 end
+    if value > max then value = max end
     for i=1, max do
         rectangle( x+( size+2 )*i-( size+2 ), y+6, size, 5, 15, 15, 15, 150 )
     end
     for i=1, value do
         if i < value then i = i+1 end
-        rectangle( x+( size+2 )*i-( size+2 )*2, y+6, size, 5, r, g, b, 180)
+        rectangle( x+( size+2 )*i-( size+2 )*2, y+6, size, 5, r, g, b, 180 )
     end
     if name ~= "" and name ~= " " and name ~= nil then
         text( x, name == string.upper( name ) and y-8 or y-10, 255, 255, 255, 255, name == string.upper( name ) and "-" or "", 0, name )
