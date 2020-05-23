@@ -1,6 +1,6 @@
 -- cache common functions
 local renderer = renderer
-local line, rectangle, text = renderer.line, renderer.rectangle, renderer.text
+local line, rectangle, text, measure_text = renderer.line, renderer.rectangle, renderer.text, renderer.measure_text
 local get_screen_size, get_latency = client.screen_size, client.latency
 local get_local_player, get_prop, get_hitboxpos, get_player_resource = entity.get_local_player, entity.get_prop, entity.hitbox_position, entity.get_player_resource
 local min, max, abs, sqrt, floor = math.min, math.max, math.abs, math.sqrt, math.floor
@@ -17,10 +17,12 @@ local old_origin = { x=0, y=0, z=0 }
 local old_simulation_time = 0
 local fdk = ui.reference( "rage", "other", "duck peek assist" )
 local dtap, dtk = ui.reference( "rage", "other", "double tap" )
+local fbaim = ui.reference( "rage", "other", "force body aim" )
+local mindmg = ui.reference( "rage", "aimbot", "minimum damage" )
 local fl_am = ui.reference( "aa", "fake lag", "limit" )
 local aa_enabled = ui.reference( "aa", "anti-aimbot angles", "enabled" )
 local onshot, onshkey = ui.reference( "aa", "other", "on shot anti-aim" )
-local pings, pingsk = ui.reference( "misc", "miscellaneous", "ping spike" )
+local pings, pingsk, pingsa = ui.reference( "misc", "miscellaneous", "ping spike" )
 local byaw = ui.reference( "aa", "anti-aimbot angles", "body yaw" )
 local max_choked_ticks = ui.reference( "misc", "settings", "sv_maxusrcmdprocessticks" )
 local angle = 0
@@ -28,9 +30,10 @@ local angle = 0
 local int = {
     enabled = ui.new_checkbox( "visuals", "other esp", "Indicators" ),
     color = ui.new_color_picker( "visuals", "other esp", "otindc_color", rm, gm, bm, am ),
-    options = ui.new_multiselect( "visuals", "other esp", "\n", "Fakelag", "Lag compensation", "Double tap", "Fake duck", "Fake", "On-shot", "Head height", "Ping spike"),
+    options = ui.new_multiselect( "visuals", "other esp", "\n", "Fakelag", "Lag compensation", "Double tap", "Fake duck", "Fake", "On-shot", "Head height", "Ping spike", "Force baim", "Minimum damage"),
     statuss = ui.new_combobox( "visuals", "other esp", "Indication type", "Color", "Checkmark" ),
-    max_bar = ui.new_checkbox( "visuals", "other esp", "Maximum bar mode" )
+    max_bar = ui.new_checkbox( "visuals", "other esp", "Maximum bar mode" ),
+    hide_og = ui.new_checkbox( "visuals", "other esp", "Hide OG indicators" )
 }
 local wnd = {
     x = database.read( "otindc_x" ) or 15,
@@ -45,7 +48,9 @@ local heights = {
     ["Fake"] = 25,
     ["On-shot"] = 18,
     ["Head height"] = 25,
-    ["Ping spike"] = 18
+    ["Ping spike"] = 18,
+    ["Force baim"] = 18,
+    ["Minimum damage"] = 18
 }
 
 local function tointeger( n )
@@ -100,7 +105,7 @@ local function rendind( x, y, max, value, size, r, g, b, a, name )
     end
     for i=1, value do
         if i < value then i = i+1 end
-        rectangle( x+( size+2 )*i-( size+2 )*2, y+6, size, 5, r, g, b, 180)
+        rectangle( x+( size+2 )*i-( size+2 )*2, y+6, size, 5, r, g, b, 180 )
     end
     if name ~= "" and name ~= " " and name ~= nil then
         text( x, name == string.upper( name ) and y-8 or y-10, 255, 255, 255, 255, name == string.upper( name ) and "-" or "", 0, name )
@@ -117,6 +122,7 @@ local function menu( )
     ui.set_visible( int.options, ui.get( int.enabled ) )
     ui.set_visible( int.statuss, ui.get( int.enabled ) )
     ui.set_visible( int.max_bar, ui.get( int.enabled ) )
+    ui.set_visible( int.hide_og, ui.get( int.enabled ) )
 end
 
 ui.set_callback( int.enabled, menu )
@@ -138,8 +144,10 @@ end )
 
 local function on_paint( )
     if ui.get( int.enabled ) ~= true then return end
-    for i = 1, 50 do
-        renderer.indicator( 255, 255, 255, 0, i)
+    if ui.get( int.hide_og ) then
+        for i = 1, 50 do
+            renderer.indicator( 255, 255, 255, 0, i)
+        end
     end
     if entity.is_alive( get_local_player( ) ) ~= true then choked_ticks = 0 end
 
@@ -149,10 +157,10 @@ local function on_paint( )
     local options = ui.get( int.options )
     local width, height = 116, 8
 
-    local curr_ping = get_prop( get_player_resource( ), "m_iPing", get_local_player( ) )
+    local min_dmg = ui.get( mindmg )
     local origin = vec_3( get_prop( get_local_player( ), "m_vecOrigin" ) )
     local velocity_prop = vec_3( entity.get_prop( get_local_player( ), "m_vecVelocity" ) )
-    local velocity = sqrt( velocity_prop.x * velocity_prop.x + velocity_prop.y * velocity_prop.y )
+    local velocity = sqrt( velocity_prop.x * velocity_prop.x + velocity_prop.y * velocity_prop.y ) or 0
     local trace_fraction, trace_entity = client.trace_line( 1, origin.x, origin.y, origin.z, origin.x, origin.y, origin.z - 24.97 )
     local _, _, orig_z = get_prop( get_local_player( ), "m_vecAbsOrigin" )
     local _, _, head_z = get_hitboxpos( get_local_player( ), 0 )
@@ -169,30 +177,21 @@ local function on_paint( )
     local lc = { r = 255, g = 0, b = 0, state = false }
     local dt = { r = 255, g = 0, b = 0, state = false }
     local fk = { r = 255, g = 0, b = 0 }
-    if trace_fraction < 1 and not on_ground( get_local_player( ) ) or velocity > 270 and origin_delta ~= nil then
-        if sqrt( origin_delta.x * origin_delta.x + origin_delta.y * origin_delta.y ) > 64 then
-            lc.r = r
-            lc.g = g
-            lc.b = b
-            lc.state = true
+    if entity.is_alive( get_local_player( ) ) then
+        if trace_fraction < 1 and not on_ground( get_local_player( ) ) or velocity > 270 and origin_delta ~= nil then
+            if sqrt( origin_delta.x * origin_delta.x + origin_delta.y * origin_delta.y ) > 64 then
+                lc.r = r
+                lc.g = g
+                lc.b = b
+                lc.state = true
+            end
         end
     end
     if ui.get( dtap ) and ui.get( dtk ) then
-        if max_choked_ticks == ui.get( fl_am ) or ui.get( fdk ) and choked_ticks >= 0 then
-            dt.r = dt.r
-            dt.g = dt.g
-            dt.b = dt.b
-        elseif choked_ticks <= 3 then
-            dt.r = r
-            dt.g = g
-            dt.b = b
-            dt.state = true
-        else
-            dt.r = 255
-            dt.g = 150
-            dt.b = 0
-            dt.state = false
-        end
+        dt.r = r
+        dt.g = g
+        dt.b = b
+        dt.state = true
     end
     if angle > 38 then
         fk.r = r
@@ -236,6 +235,12 @@ local function on_paint( )
         bar_max = 14
     end
 
+    if ui.get( mindmg ) > 100 then 
+        min_dmg = string.format( "HP  +  %s", ui.get( mindmg )-100 )
+    elseif ui.get( mindmg ) == 0 then
+        min_dmg = "AUTO"
+    end
+
     local indic = { x = wnd.x + 5, y = wnd.y + 15 }
     render.container( wnd.x, wnd.y, width, height )
     for i=1, #options do
@@ -276,11 +281,21 @@ local function on_paint( )
             render.indication( indic.x, indic.y + 6, bar_max, bar_headh, 10, r, g, b, 255, "HEAD HEIGHT" )
         elseif option == "Ping spike" then
             if ui.get( int.statuss ) == "Color" then
-                text( indic.x, indic.y, ui.get( pings ) and ui.get( pingsk ) and curr_ping >= 100 and r or 255, ui.get( pings ) and ui.get( pingsk ) and curr_ping >= 100 and g or 0, ui.get( pings ) and ui.get( pingsk ) and curr_ping >= 100 and b or 0, 255, "-", 0, "PING" )
+                text( indic.x, indic.y, ui.get( pings ) and ui.get( pingsk ) and r or 255, ui.get( pings ) and ui.get( pingsk ) and g or 0, ui.get( pings ) and ui.get( pingsk ) and b or 0, 255, "-", 0, "PING" )
             else
                 text( indic.x, indic.y, 255, 255, 255, 255, "-", 0, "PING" )
-                render.status( indic.x+width-15, indic.y+8, 5, ui.get( pings ) and ui.get( pingsk ) and curr_ping >= 100 )
+                render.status( indic.x+width-15, indic.y+8, 5, ui.get( pings ) and ui.get( pingsk ) )
             end
+        elseif option == "Force baim" then
+            if ui.get( int.statuss ) == "Color" then
+                text( indic.x, indic.y, ui.get( fbaim ) and r or 255, ui.get( fbaim ) and g or 0, ui.get( fbaim ) and b or 0, 255, "-", 0, "BAIM" )
+            else
+                text( indic.x, indic.y, 255, 255, 255, 255, "-", 0, "BAIM" )
+                render.status( indic.x+width-15, indic.y+8, 5, ui.get( fbaim ) )
+            end
+        elseif option == "Minimum damage" then
+            text( indic.x, indic.y, 255, 255, 255, 255, "-", 0, "DAMAGE" )
+            text( indic.x + width - 15 - measure_text( "-", min_dmg ), indic.y, 255, 255, 255, 255, "-", 0, min_dmg )
         end
         if heights[option] ~= nil then
             indic.y = indic.y + ( heights[ option ]-1 )
