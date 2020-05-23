@@ -1,3 +1,3 @@
 # gamesense lua scripts
 
-Repository mainly for my gamesense lua scripts.
+Repository that was made for my lua scripts
