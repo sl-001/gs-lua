@@ -13,12 +13,14 @@ local scr = { w = wdei, h = hdei }
 local menu_color = ui.reference( "misc", "settings", "menu color" )
 local rm, gm, bm, am = ui.get( menu_color )
 local choked_ticks = 0
-local old_origin = { x=0, y=0, z=0 }
+local old_origin = { x=180, y=180, z=180 }
 local old_simulation_time = 0
 local fdk = ui.reference( "rage", "other", "duck peek assist" )
 local dtap, dtk = ui.reference( "rage", "other", "double tap" )
 local fbaim = ui.reference( "rage", "other", "force body aim" )
 local mindmg = ui.reference( "rage", "aimbot", "minimum damage" )
+local safep = ui.reference( "rage", "aimbot", "force safe point" )
+local qpa, qpak = ui.reference( "rage", "other", "quick peek assist" )
 local fl_am = ui.reference( "aa", "fake lag", "limit" )
 local aa_enabled = ui.reference( "aa", "anti-aimbot angles", "enabled" )
 local onshot, onshkey = ui.reference( "aa", "other", "on shot anti-aim" )
@@ -30,7 +32,7 @@ local angle = 0
 local int = {
     enabled = ui.new_checkbox( "visuals", "other esp", "Indicators" ),
     color = ui.new_color_picker( "visuals", "other esp", "otindc_color", rm, gm, bm, am ),
-    options = ui.new_multiselect( "visuals", "other esp", "\n", "Fakelag", "Lag compensation", "Double tap", "Fake duck", "Fake", "On-shot", "Head height", "Ping spike", "Force baim", "Minimum damage"),
+    options = ui.new_multiselect( "visuals", "other esp", "\n", "Fakelag", "Lag compensation", "Double tap", "Fake duck", "Fake", "On-shot", "Head height", "Ping spike", "Force baim", "Minimum damage", "Safe point", "Quick peek"),
     max_bar = ui.new_checkbox( "visuals", "other esp", "Maximum bar mode" ),
     statuss = ui.new_combobox( "visuals", "other esp", "Indication type", "Color", "Checkmark" ),
     statuss2 = ui.new_combobox( "visuals", "other esp", "Indication type (amount)", "Bars", "Slider" ),
@@ -51,16 +53,10 @@ local heights = {
     ["Head height"] = 25,
     ["Ping spike"] = 18,
     ["Force baim"] = 18,
-    ["Minimum damage"] = 18
+    ["Minimum damage"] = 18,
+    ["Quick peek"] = 18,
+    ["Safe point"] = 18
 }
-
-local function tointeger( n )
-    return floor( n + 0.5 )
-end
-
-local function vec_3( _x, _y, _z ) 
-	return { x = _x or 0, y = _y or 0, z = _z or 0 } 
-end
 
 local function copy_table( original ) -- http://lua-users.org/wiki/CopyTable
     local original_type = type( original )
@@ -77,6 +73,14 @@ local function copy_table( original ) -- http://lua-users.org/wiki/CopyTable
     return copy
 end
 
+local function tointeger( n )
+    return floor( n + 0.5 )
+end
+
+local function vec_3( _x, _y, _z ) 
+	return { x = _x or 0, y = _y or 0, z = _z or 0 } 
+end
+
 local function on_ground( ent )
     if band( get_prop( get_local_player( ), "m_fFlags" ), 1 ) == 1 then return true end
     return false
@@ -84,7 +88,7 @@ end
 
 local function contains( tbl, val )
     for i = 1, #tbl do
-        if tbl[i] == val then return true end
+        if tbl[ i ] == val then return true end
     end
     return false
 end
@@ -117,7 +121,7 @@ local function rendind( x, y, max, value, size, r, g, b, a, name )
         rectangle( x, y+6, max, 5, 15, 15, 15, 150 )
         rectangle( x+1, y+7, value-2, 3, r, g, b, 150 )
     else
-        return error("Value must be 'Slider' or 'Bars'")
+        return error("Value must be 'Slider' or 'Bars'" )
     end
     if name ~= "" and name ~= " " and name ~= nil then
         text( x, name == string.upper( name ) and y-8 or y-10, 255, 255, 255, 255, name == string.upper( name ) and "-" or "", 0, name )
@@ -247,18 +251,18 @@ local function on_paint( )
     end
 
     if ui.get( int.max_bar ) then 
-            bar_ticks = choked_ticks
-            bar_fake = angle/4.285714285714286
-            bar_headh = floor( 14*headp )
-            width = 176
-            bar_max = 14
+        bar_ticks = choked_ticks
+        bar_fake = angle/4.285714285714286
+        bar_headh = floor( 14*headp )
+        width = 176
+        bar_max = 14
     end
     if ui.get( int.statuss2 ) == "Slider" then
         width = 116
-            bar_max = width-10
-            bar_ticks = choked_ticks*8.285714285714286
-            bar_fake = angle*1.93
-            bar_headh = floor( bar_max*headp )
+        bar_max = width-10
+        bar_ticks = choked_ticks*8.285714285714286
+        bar_fake = angle*1.93
+        bar_headh = floor( bar_max*headp )
     end
 
     if ui.get( mindmg ) > 100 then 
@@ -322,6 +326,20 @@ local function on_paint( )
         elseif option == "Minimum damage" then
             text( indic.x, indic.y, 255, 255, 255, 255, "-", 0, "DAMAGE" )
             text( indic.x + width - 15 - measure_text( "-", min_dmg ), indic.y, 255, 255, 255, 255, "-", 0, min_dmg )
+        elseif option == "Quick peek" then
+            if ui.get( int.statuss ) == "Color" then
+                text( indic.x, indic.y, ui.get( qpa ) and ui.get( qpak ) and r or 255, ui.get( qpa ) and ui.get( qpak ) and g or 0, ui.get( qpa ) and ui.get( qpak ) and b or 0, 255, "-", 0, "QUICK PEEK" )
+            else
+                text( indic.x, indic.y, 255, 255, 255, 255, "-", 0, "QUICK PEEK" )
+                render.status( indic.x+width-15, indic.y+8, 5, ui.get( qpa ) and ui.get( qpak ) )
+            end
+        elseif option == "Safe point" then
+            if ui.get( int.statuss ) == "Color" then
+                text( indic.x, indic.y, ui.get( safep ) and r or 255, ui.get( safep ) and g or 0, ui.get( safep ) and b or 0, 255, "-", 0, "SAFE-POINT" )
+            else
+                text( indic.x, indic.y, 255, 255, 255, 255, "-", 0, "SAFE-POINT" )
+                render.status( indic.x+width-15, indic.y+8, 5, ui.get( safep ) )
+            end
         end
         if heights[option] ~= nil then
             indic.y = indic.y + ( heights[ option ]-1 )
