@@ -31,9 +31,10 @@ local int = {
     enabled = ui.new_checkbox( "visuals", "other esp", "Indicators" ),
     color = ui.new_color_picker( "visuals", "other esp", "otindc_color", rm, gm, bm, am ),
     options = ui.new_multiselect( "visuals", "other esp", "\n", "Fakelag", "Lag compensation", "Double tap", "Fake duck", "Fake", "On-shot", "Head height", "Ping spike", "Force baim", "Minimum damage"),
-    statuss = ui.new_combobox( "visuals", "other esp", "Indication type", "Color", "Checkmark" ),
     max_bar = ui.new_checkbox( "visuals", "other esp", "Maximum bar mode" ),
-    hide_og = ui.new_checkbox( "visuals", "other esp", "Hide OG indicators" )
+    statuss = ui.new_combobox( "visuals", "other esp", "Indication type", "Color", "Checkmark" ),
+    statuss2 = ui.new_combobox( "visuals", "other esp", "Indication type (amount)", "Bars", "Slider" ),
+    hide = ui.new_multiselect( "visuals", "other esp", "Hide", "OG indicators", "Container" )
 }
 local wnd = {
     x = database.read( "otindc_x" ) or 15,
@@ -94,18 +95,29 @@ local function intersect( x, y, w, h )
 end
 local function conta( x, y, w, h )
     local r, g, b, a = ui.get( int.color )
-    rectangle( x, y, w, h, 30, 30, 30, 200 )
-    rectangle( x+1, y+1, w-2, 1, r, g, b, 255 )
+    if contains( ui.get( int.hide ), "Container" ) == false then
+        rectangle( x, y, w, h, 30, 30, 30, 200 )
+        rectangle( x+1, y+1, w-2, 1, r, g, b, 255 )
+    end
 end
 local function rendind( x, y, max, value, size, r, g, b, a, name )
-    if value > 1 then value = value + 1 end
-    if value+1 > max then value = max+1 end
-    for i=1, max do
-        rectangle( x+( size+2 )*i-( size+2 ), y+6, size, 5, 15, 15, 15, 150 )
-    end
-    for i=1, value do
-        if i < value then i = i+1 end
-        rectangle( x+( size+2 )*i-( size+2 )*2, y+6, size, 5, r, g, b, 180 )
+    if ui.get( int.statuss2 ) == "Bars" then
+        if value > 1 then value = value + 1 end
+        if value+1 > max then value = max+1 end
+        for i=1, max do
+            rectangle( x+( size+2 )*i-( size+2 ), y+6, size, 5, 15, 15, 15, 150 )
+        end
+        for i=1, value do
+            if i < value then i = i+1 end
+            rectangle( x+( size+2 )*i-( size+2 )*2, y+6, size, 5, r, g, b, 180 )
+        end
+    elseif ui.get( int.statuss2 ) == "Slider" then
+        if value-2 > max then value = max end
+        if value-2 < 0 then value = 2 end
+        rectangle( x, y+6, max, 5, 15, 15, 15, 150 )
+        rectangle( x+1, y+7, value-2, 3, r, g, b, 150 )
+    else
+        return error("Value must be 'Slider' or 'Bars'")
     end
     if name ~= "" and name ~= " " and name ~= nil then
         text( x, name == string.upper( name ) and y-8 or y-10, 255, 255, 255, 255, name == string.upper( name ) and "-" or "", 0, name )
@@ -122,7 +134,8 @@ local function menu( )
     ui.set_visible( int.options, ui.get( int.enabled ) )
     ui.set_visible( int.statuss, ui.get( int.enabled ) )
     ui.set_visible( int.max_bar, ui.get( int.enabled ) )
-    ui.set_visible( int.hide_og, ui.get( int.enabled ) )
+    ui.set_visible( int.hide, ui.get( int.enabled ) )
+    ui.set_visible( int.statuss2, ui.get( int.enabled ) )
 end
 
 ui.set_callback( int.enabled, menu )
@@ -144,12 +157,15 @@ end )
 
 local function on_paint( )
     if ui.get( int.enabled ) ~= true then return end
-    if ui.get( int.hide_og ) then
+    if contains( ui.get( int.hide ), "OG indicators" ) then
         for i = 1, 50 do
             renderer.indicator( 255, 255, 255, 0, i)
         end
     end
-    if entity.is_alive( get_local_player( ) ) ~= true then choked_ticks = 0 end
+    if entity.is_alive( get_local_player( ) ) ~= true then 
+        choked_ticks = 0 
+        angle = 0
+    end
 
     local r, g, b, a = ui.get( int.color )
     local left_click = client.key_state( 0x01 )
@@ -170,7 +186,7 @@ local function on_paint( )
             local duck_am = get_prop( get_local_player( ), "m_flDuckAmount" ) or 0
         end
     end
-    local headp_delta = head_z - orig_z + ( duckam or 0 )*12
+    local headp_delta = head_z - orig_z + ( duckam or 0 )*12 or 0
     local h_min, h_max = 55, 70
     local headp = max( 0, min( 1, 1-( headp_delta-h_min )/( headp_delta-h_max ) ) )
     local bar_max, bar_fake, bar_headh, bar_ticks = 9, tointeger( angle )/6.666666666666667, floor( 9*headp ), tointeger( choked_ticks/1.5 )
@@ -226,13 +242,23 @@ local function on_paint( )
             height = height + heights[ option ]
         end
     end
+    if ui.get( int.statuss2 ) == "Slider" then
+        bar_max = width-10
+    end
 
     if ui.get( int.max_bar ) then 
-        bar_ticks = choked_ticks
-        bar_fake = angle/4.285714285714286
-        bar_headh = floor( 14*headp )
-        width = 176
-        bar_max = 14
+            bar_ticks = choked_ticks
+            bar_fake = angle/4.285714285714286
+            bar_headh = floor( 14*headp )
+            width = 176
+            bar_max = 14
+    end
+    if ui.get( int.statuss2 ) == "Slider" then
+        width = 116
+            bar_max = width-10
+            bar_ticks = choked_ticks*8.285714285714286
+            bar_fake = angle*1.93
+            bar_headh = floor( bar_max*headp )
     end
 
     if ui.get( mindmg ) > 100 then 
