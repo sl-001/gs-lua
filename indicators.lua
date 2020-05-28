@@ -24,6 +24,7 @@ local qpa, qpak = ui.reference( "rage", "other", "quick peek assist" )
 local fl_am = ui.reference( "aa", "fake lag", "limit" )
 local aa_enabled = ui.reference( "aa", "anti-aimbot angles", "enabled" )
 local onshot, onshkey = ui.reference( "aa", "other", "on shot anti-aim" )
+local fakep = ui.reference( "aa", "other", "fake peek" )
 local pings, pingsk, pingsa = ui.reference( "misc", "miscellaneous", "ping spike" )
 local byaw = ui.reference( "aa", "anti-aimbot angles", "body yaw" )
 local max_choked_ticks = ui.reference( "misc", "settings", "sv_maxusrcmdprocessticks" )
@@ -32,15 +33,15 @@ local angle = 0
 local int = {
     enabled = ui.new_checkbox( "visuals", "other esp", "Indicators" ),
     color = ui.new_color_picker( "visuals", "other esp", "otindc_color", rm, gm, bm, am ),
-    options = ui.new_multiselect( "visuals", "other esp", "\n", "Fakelag", "Lag compensation", "Double tap", "Fake duck", "Fake", "On-shot", "Head height", "Ping spike", "Force baim", "Minimum damage", "Safe point", "Quick peek"),
+    options = ui.new_multiselect( "visuals", "other esp", "\n", "Fakelag", "Lag compensation", "Double tap", "Fake duck", "Fake", "On-shot", "Head height", "Ping spike", "Force baim", "Minimum damage", "Safe point", "Quick peek", "Fake peek"),
     max_bar = ui.new_checkbox( "visuals", "other esp", "Maximum bar mode" ),
     statuss = ui.new_combobox( "visuals", "other esp", "Indication type", "Color", "Checkmark" ),
     statuss2 = ui.new_combobox( "visuals", "other esp", "Indication type (amount)", "Bars", "Slider" ),
     hide = ui.new_multiselect( "visuals", "other esp", "Hide", "OG indicators", "Container" )
 }
 local wnd = {
-    x = database.read( "otindc_x" ) or 15,
-    y = database.read( "otindc_y" ) or scr.h/2,
+    x = database.read( "indc_x" ) or 15,
+    y = database.read( "indc_y" ) or scr.h/2,
     dragging = false
 }
 local heights = {
@@ -169,6 +170,7 @@ local function on_paint( )
     if entity.is_alive( get_local_player( ) ) ~= true then 
         choked_ticks = 0 
         angle = 0
+        headp_delta = 0
     end
 
     local r, g, b, a = ui.get( int.color )
@@ -340,6 +342,13 @@ local function on_paint( )
                 text( indic.x, indic.y, 255, 255, 255, 255, "-", 0, "SAFE-POINT" )
                 render.status( indic.x+width-15, indic.y+8, 5, ui.get( safep ) )
             end
+        elseif option == "Fake peek" then
+            if ui.get( int.statuss ) == "Color" then
+                text( indic.x, indic.y, ui.get( fakep ) and r or 255, ui.get( fakep ) and g or 0, ui.get( fakep ) and b or 0, 255, "-", 0, "FAKE PEEK" )
+            else
+                text( indic.x, indic.y, 255, 255, 255, 255, "-", 0, "FAKE PEEK" )
+                render.status( indic.x+width-15, indic.y+8, 5, ui.get( fakep ) )
+            end
         end
         if heights[option] ~= nil then
             indic.y = indic.y + ( heights[ option ]-1 )
@@ -348,3 +357,8 @@ local function on_paint( )
 end
 
 event_callback( "paint", on_paint )
+
+event_callback( "shutdown", function( )
+    database.write( "indc_x", wnd.x )
+    database.write( "indc_y", wnd.y )
+end )
