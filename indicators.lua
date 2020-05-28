@@ -56,7 +56,8 @@ local heights = {
     ["Force baim"] = 18,
     ["Minimum damage"] = 18,
     ["Quick peek"] = 18,
-    ["Safe point"] = 18
+    ["Safe point"] = 18,
+    ["Fake peek"] = 18
 }
 
 local function copy_table( original ) -- http://lua-users.org/wiki/CopyTable
