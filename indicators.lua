@@ -24,7 +24,7 @@ local qpa, qpak = ui.reference( "rage", "other", "quick peek assist" )
 local fl_am = ui.reference( "aa", "fake lag", "limit" )
 local aa_enabled = ui.reference( "aa", "anti-aimbot angles", "enabled" )
 local onshot, onshkey = ui.reference( "aa", "other", "on shot anti-aim" )
-local fakep = ui.reference( "aa", "other", "fake peek" )
+local fakep, fakeph = ui.reference( "aa", "other", "fake peek" )
 local pings, pingsk, pingsa = ui.reference( "misc", "miscellaneous", "ping spike" )
 local byaw = ui.reference( "aa", "anti-aimbot angles", "body yaw" )
 local max_choked_ticks = ui.reference( "misc", "settings", "sv_maxusrcmdprocessticks" )
@@ -344,10 +344,10 @@ local function on_paint( )
             end
         elseif option == "Fake peek" then
             if ui.get( int.statuss ) == "Color" then
-                text( indic.x, indic.y, ui.get( fakep ) and r or 255, ui.get( fakep ) and g or 0, ui.get( fakep ) and b or 0, 255, "-", 0, "FAKE PEEK" )
+                text( indic.x, indic.y, ui.get( fakep ) and ui.get( fakeph ) and r or 255, ui.get( fakep ) and ui.get( fakeph ) and g or 0, ui.get( fakep ) and ui.get( fakeph ) and b or 0, 255, "-", 0, "FAKE PEEK" )
             else
                 text( indic.x, indic.y, 255, 255, 255, 255, "-", 0, "FAKE PEEK" )
-                render.status( indic.x+width-15, indic.y+8, 5, ui.get( fakep ) )
+                render.status( indic.x+width-15, indic.y+8, 5, ui.get( fakep ) and ui.get( fakeph ) )
             end
         end
         if heights[option] ~= nil then
