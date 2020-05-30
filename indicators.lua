@@ -45,19 +45,19 @@ local wnd = {
     dragging = false
 }
 local heights = {
-    ["Fakelag"] = 20,
-    ["Lag compensation"] = 18,
-    ["Fake duck"] = 18,
-    ["Double tap"] = 18,
-    ["Fake"] = 25,
-    ["On-shot"] = 18,
-    ["Head height"] = 25,
-    ["Ping spike"] = 18,
-    ["Force baim"] = 18,
-    ["Minimum damage"] = 18,
-    ["Quick peek"] = 18,
-    ["Safe point"] = 18,
-    ["Fake peek"] = 18
+    ["Fakelag"] = 21,
+    ["Lag compensation"] = 15,
+    ["Fake duck"] = 15,
+    ["Double tap"] = 15,
+    ["Fake"] = 21,
+    ["On-shot"] = 15,
+    ["Head height"] = 21,
+    ["Ping spike"] = 15,
+    ["Force baim"] = 15,
+    ["Minimum damage"] = 15,
+    ["Quick peek"] = 15,
+    ["Safe point"] = 15,
+    ["Fake peek"] = 15
 }
 
 local function copy_table( original ) -- http://lua-users.org/wiki/CopyTable
@@ -111,28 +111,26 @@ local function rendind( x, y, max, value, size, r, g, b, a, name )
         if value > 1 then value = value + 1 end
         if value+1 > max then value = max+1 end
         for i=1, max do
-            rectangle( x+( size+2 )*i-( size+2 ), y+6, size, 5, 15, 15, 15, 150 )
+            rectangle( x+( size+2 )*i-( size+2 ), y+12, size, 5, 15, 15, 15, 150 )
         end
         for i=1, value do
             if i < value then i = i+1 end
-            rectangle( x+( size+2 )*i-( size+2 )*2, y+6, size, 5, r, g, b, 180 )
+            rectangle( x+( size+2 )*i-( size+2 )*2, y+12, size, 5, r, g, b, 180 )
         end
     elseif ui.get( int.statuss2 ) == "Slider" then
         if value-2 > max then value = max end
         if value-2 < 0 then value = 2 end
-        rectangle( x, y+6, max, 5, 15, 15, 15, 150 )
-        rectangle( x+1, y+7, value-2, 3, r, g, b, 150 )
-    else
-        return error("Value must be 'Slider' or 'Bars'" )
+        rectangle( x, y+12, max, 5, 15, 15, 15, 150 )
+        rectangle( x+1, y+13, value-2, 3, r, g, b, 150 )
     end
     if name ~= "" and name ~= " " and name ~= nil then
-        text( x, name == string.upper( name ) and y-8 or y-10, 255, 255, 255, 255, name == string.upper( name ) and "-" or "", 0, name )
+        text( x, y-1, 255, 255, 255, 255, "-", 0, name )
     end
 end
 local function renstatus( x, y, size, state, type )
     local r, g, b, a = ui.get( int.color )
     line( state and x-size/2 or x-size/2, state and y-size/2 or y-size, state and x or x+size/2, y, state and r or 255, state and g or 20, state and b or 0, 255 )
-    line( state and x or x-size/2, y, state and x+size or x+size/2, y-size, state and r or 255, state and g or 20, state and b or 0, 255 )
+    line( state and x-1 or x-size/2, y, state and x+size-2 or x+size/2, state and y-size-1 or y-size, state and r or 255, state and g or 20, state and b or 0, 255 )
 end
 local render = { container = conta, indication = rendind, status = renstatus }
 
@@ -168,17 +166,12 @@ local function on_paint( )
             renderer.indicator( 255, 255, 255, 0, i)
         end
     end
-    if entity.is_alive( get_local_player( ) ) ~= true then 
-        choked_ticks = 0 
-        angle = 0
-        headp_delta = 0
-    end
 
     local r, g, b, a = ui.get( int.color )
     local left_click = client.key_state( 0x01 )
     local cx, cy = get_mousepos( )
     local options = ui.get( int.options )
-    local width, height = 116, 8
+    local width, height = 116, 3
 
     local min_dmg = ui.get( mindmg )
     local origin = vec_3( get_prop( get_local_player( ), "m_vecOrigin" ) )
@@ -196,6 +189,11 @@ local function on_paint( )
     local headp_delta = head_z - orig_z + ( duckam or 0 )*12 or 0
     local h_min, h_max = 55, 70
     local headp = max( 0, min( 1, 1-( headp_delta-h_min )/( headp_delta-h_max ) ) )
+    if entity.is_alive( get_local_player( ) ) ~= true then 
+        choked_ticks = 0 
+        angle = 0
+        headp = 0
+    end
     local bar_max, bar_fake, bar_headh, bar_ticks = 9, tointeger( angle )/6.666666666666667, floor( 9*headp ), tointeger( choked_ticks/1.5 )
     local lc = { r = 255, g = 0, b = 0, state = false }
     local dt = { r = 255, g = 0, b = 0, state = false }
@@ -246,7 +244,7 @@ local function on_paint( )
     for i=1, #options do 
         option = options[ i ]
         if heights[ option ] ~= nil then
-            height = height + heights[ option ]
+            height = height + heights[ option ]+1
         end
     end
     if ui.get( int.statuss2 ) == "Slider" then
@@ -274,7 +272,7 @@ local function on_paint( )
         min_dmg = "AUTO"
     end
 
-    local indic = { x = wnd.x + 5, y = wnd.y + 15 }
+    local indic = { x = wnd.x + 5, y = wnd.y + 5 }
     render.container( wnd.x, wnd.y, width, height )
     for i=1, #options do
         option = options[ i ]
@@ -302,7 +300,7 @@ local function on_paint( )
                 render.status( indic.x+width-15, indic.y+8, 5, dt.state )
             end
         elseif option == "Fake" then
-            render.indication( indic.x, indic.y + 6, bar_max, bar_fake, 10, fk.r, fk.g, fk.b, 255, string.format( "FAKE  -  %s", tointeger( angle ) ) )
+            render.indication( indic.x, indic.y, bar_max, bar_fake, 10, fk.r, fk.g, fk.b, 255, string.format( "FAKE  -  %s", tointeger( angle ) ) )
         elseif option == "On-shot" then
             if ui.get( int.statuss ) == "Color" then
                 text( indic.x, indic.y, ui.get( aa_enabled ) and ui.get( onshot ) and ui.get( onshkey ) and r or 255, ui.get( aa_enabled ) and ui.get( onshot ) and ui.get( onshkey ) and g or 0, ui.get( aa_enabled ) and ui.get( onshot ) and ui.get( onshkey ) and b or 0, 255, "-", 0, "ON-SHOT" )
@@ -311,7 +309,7 @@ local function on_paint( )
                 render.status( indic.x+width-15, indic.y+8, 5, ui.get( aa_enabled ) and ui.get( onshot ) and ui.get( onshkey ) )
             end
         elseif option == "Head height" then
-            render.indication( indic.x, indic.y + 6, bar_max, bar_headh, 10, r, g, b, 255, "HEAD HEIGHT" )
+            render.indication( indic.x, indic.y, bar_max, bar_headh, 10, r, g, b, 255, "HEAD HEIGHT" )
         elseif option == "Ping spike" then
             if ui.get( int.statuss ) == "Color" then
                 text( indic.x, indic.y, ui.get( pings ) and ui.get( pingsk ) and r or 255, ui.get( pings ) and ui.get( pingsk ) and g or 0, ui.get( pings ) and ui.get( pingsk ) and b or 0, 255, "-", 0, "PING" )
@@ -352,7 +350,7 @@ local function on_paint( )
             end
         end
         if heights[option] ~= nil then
-            indic.y = indic.y + ( heights[ option ]-1 )
+            indic.y = indic.y + ( heights[ option ]+1 )
         end
     end
 end
