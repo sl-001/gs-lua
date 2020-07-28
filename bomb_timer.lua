@@ -84,7 +84,7 @@ local function on_paint()
 
     if ui.get(mvar.type) == "Old" then
         renderer.text(5, 5, r, g, b, 255, "+", 0, site, " - ", vars.timer, "s")
-        renderer.text(5, 25, dmg >= entity.get_prop(entity.get_local_player(), "m_iHealth") and 255 or r, dmg >= entity.get_prop(entity.get_local_player(), "m_iHealth") and 0 or g, dmg >= entity.get_prop(entity.get_local_player(), "m_iHealth") and 0 or b, 255, "+", 0, dmg_text)
+        renderer.text(5, 25, 255, dmg >= entity.get_prop(entity.get_local_player(), "m_iHealth") and 0 or 255, dmg >= entity.get_prop(entity.get_local_player(), "m_iHealth") and 0 or 255, 255, "+", 0, dmg_text)
     elseif ui.get(mvar.type) == "Custom" then
         draw_container(cont.x, cont.y, cont.w, cont.h)
         c4ico:draw(cont.x-13, cont.y-14, nil, 40, 255, 255, 255, 255)
