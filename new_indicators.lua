@@ -2,8 +2,8 @@ local js, img = panorama.open(), require "gamesense/images"
 
 --> menu elements
 local e = {
-    enabled = ui.new_checkbox("lua", "a", "Indicators"),
-    opt = ui.new_multiselect("lua", "a", "\n", "User info", "Force baim", "Double tap", "Desync", "Desync safety", "Fake lag", "Fake duck", "On shot", "Fake peek", "Min damage"),
+    enabled = ui.new_checkbox("visuals", "other esp", "Indicators"),
+    opt = ui.new_multiselect("visuals", "other esp", "\n", "User info", "Force baim", "Double tap", "Desync", "Desync safety", "Fake lag", "Fake duck", "On shot", "Fake peek", "Min damage"),
 }
 
 --> local variables
