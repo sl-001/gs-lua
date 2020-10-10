@@ -39,7 +39,7 @@ local ref = {
     ui.reference("rage", "aimbot", "minimum damage")
 }
 
---> local function
+--> local functions
 local function contains(tbl, val)
     for i=1, #tbl do
         if tbl[i] == val then return true end
