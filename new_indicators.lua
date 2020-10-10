@@ -39,7 +39,7 @@ local ref = {
     ui.reference("rage", "aimbot", "minimum damage")
 }
 
---> local functions
+--> local function
 local function contains(tbl, val)
     for i=1, #tbl do
         if tbl[i] == val then return true end
@@ -99,7 +99,7 @@ end
 local function on_paint()
     local get_local = entity.get_local_player()
     if get_local == nil or entity.is_alive(get_local) == false then return end
-    if steamid64 == nil then steamid64 = js.MyPersonaAPI.getXuid() end
+    if steamid64 == nil then steamid64 = js.MyPersonaAPI.getXuid(); avatar = img.get_steam_avatar(steamid64, 65) end
     local opts = ui.get(e.opt)
     local cx, cy = ui.mouse_position()
     local left_click = client.key_state(0x01)
@@ -162,15 +162,16 @@ local function on_paint()
         elseif opt == "Double tap" then
             draw_check(ind.x, ind.y, "Double tap", ui.get(ref[2][1]) and ui.get(ref[2][2]), mclr, mclr_)
             local cur, use = globals.curtime(), 0
-            local act = entity.get_prop(get_local, "m_hActiveWeapon")
-            if act == nil then return end
-            local dt = {entity.get_prop(get_local, "m_flNextAttack"), entity.get_prop(get_local, "m_flNextPrimaryAttack"), entity.get_prop(act, "m_flNextSecondaryAttack")}
-            if dt[1] == nil or dt[2] == nil or dt[3] == nil then return end
-            dt[1] = dt[1]+0.5; dt[2] = dt[2]+0.5; dt[3] = dt[3]+0.5
-            use = math.max(dt[1], dt[3]) < dt[2] and dt[3] - cur or math.max(dt[2], dt[3]) - cur
-            if ui.get(ref[2][2]) and entity.get_classname(entity.get_prop(get_local, "m_hActiveWeapon")) ~= "CKnife" then
-                if math.max(dt[1], dt[3]) < dt[2] and use > 0 or use > 0 then
-                    draw_slider(ind.x+80, ind.y-14, c_.w-114, "", 1+math.max(-1, -use), math.max(0, math.floor((1-use)*100)), "%", false, true, mclr, mclr_)
+            local act = entity.get_player_weapon(get_local)
+            if act == nil then act = "" end
+            local dt = {entity.get_prop(get_local, "m_flNextAttack"), entity.get_prop(act, "m_flNextPrimaryAttack"), entity.get_prop(act, "m_flNextSecondaryAttack")}
+            if dt[1] ~= nil and dt[2] ~= nil and dt[3] ~= nil then
+                dt[1] = dt[1]+0.5; dt[2] = dt[2]+0.5; dt[3] = dt[3]+0.5
+                use = math.max(dt[1], dt[3]) < dt[2] and dt[3] - cur or math.max(dt[2], dt[3]) - cur
+                if ui.get(ref[2][2]) and entity.get_classname(act) ~= "CKnife" then
+                    if math.max(dt[1], dt[3]) < dt[2] and use > 0 or use > 0 then
+                        draw_slider(ind.x+80, ind.y-14, c_.w-114, "", 1+math.max(-1, -use), math.max(0, math.floor((1-use)*100)), "%", false, true, mclr, mclr_)
+                    end
                 end
             end
         elseif opt == "Desync" then
