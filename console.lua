@@ -300,10 +300,15 @@ function clear(idx)
     database.write("console/prev_logs", nil)
 end
 
+function edit(idx, msg)
+    if idx == nil or type(idx) ~= "number" then return error("Incorrect index") end
+    logs[idx][1] = msg
+end
+
 function get_table()
     local tbl = {}
     for i=1, #logs do
-        table.insert(tbl, logs[i][1])
+        table.insert(tbl, {logs[i][1], false})
     end
     return tbl
 end
@@ -334,12 +339,13 @@ client.set_event_callback("console_input", function(out)
         return false
     end
 end)
-client.set_event_callback("aim_hit", function(e)
+client.set_event_callback("player_hurt", function(e)
     if not ui.get(ui.reference("misc", "miscellaneous", "log damage dealt")) then return end
     local hitgroup_names = {"generic", "head", "chest", "stomach", "left arm", "right arm", "left leg", "right leg", "neck", "?", "gear"}
     local group = hitgroup_names[e.hitgroup + 1] or "?"
-    local health = entity.get_prop(e.target, "m_iHealth")
-    cast("log", nil, "Hit " .. entity.get_player_name(e.target) .. " in the " .. group .. " for " .. e.damage .. " damage (" .. health .. " health remaining)")
+    if client.userid_to_entindex(e.attacker) == entity.get_local_player() then
+        cast("log", nil, "Hit " .. entity.get_player_name(client.userid_to_entindex(e.userid)) .. " in the " .. group .. " for " .. e.dmg_health .. " damage (" .. e.health .. " health remaining)")
+    end
 end)
 client.set_event_callback("aim_miss", function(e)
     if e.reason == "spread" and ui.get(ui.reference("rage", "aimbot", "log misses due to spread")) then
@@ -379,6 +385,7 @@ menu_init()
 
 local functions = {
     print = cast,
+    edit = edit,
     clear = clear,
     get_table = get_table
 }
