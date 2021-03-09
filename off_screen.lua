@@ -50,7 +50,7 @@ end
 --» callbacks
 local function on_paint()
     local player = gs.ent["get_local_player"]()
-    if not player and gs.ent["is_alive"](player) then return end
+    if not player or not gs.ent["is_alive"](player) then return end
     local r, g, b, a = ui.get(pa.clr)
     local size, get_radius, opts = ui.get(pa.size), 10*ui.get(pa.radius), ui.get(pa.options)
     local alpha = 1
