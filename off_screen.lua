@@ -86,6 +86,16 @@ local function on_paint()
         local bb = {gs.ent["get_bounding_box"](ent)}
         local position = vector(gs.ent["get_origin"](ent))
         if not position then goto skip end
+        local w2s, w2s2 = gs.render["world_to_screen"](position.x, position.y, position.z)
+        if ui.get(pa.off_screen) then
+            if w2s and w2s2 and w2s2 > 0 and w2s2 < h then
+                if contains(opts, "Dormant players") then
+                    if not gs.ent["is_dormant"](ent) then goto skip end
+                else
+                    goto skip
+                end
+            end
+        end
         local dist = math.min(800, pos:dist(position))/800
         local weapon = gs.ent["get_player_weapon"](ent)
         local weapon_idx = gs.ent["get_prop"](weapon, "m_iItemDefinitionIndex")
@@ -97,7 +107,6 @@ local function on_paint()
         if contains(opts, "Distance based radius") then
             radius = radius*(dist)
         end
-        local w2s, w2s2 = gs.render["world_to_screen"](position.x, position.y, position.z)
         local _, angle = pos:to(position):angles()
         if not angle then goto skip end
         angle = 270-angle+view.y
@@ -118,10 +127,6 @@ local function on_paint()
             else
                 goto skip
             end
-        end
-
-        if ui.get(pa.off_screen) then
-            if w2s and w2s2 and w2s2 > 0 and w2s2 < h then a = 0 end
         end
 
         if contains(opts, "Grenade warning") then
