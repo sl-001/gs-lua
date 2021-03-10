@@ -89,11 +89,13 @@ local function on_paint()
         local dist = math.min(800, pos:dist(position))/800
         local weapon = gs.ent["get_player_weapon"](ent)
         local weapon_idx = gs.ent["get_prop"](weapon, "m_iItemDefinitionIndex")
+        local text_a = nil
         if contains(opts, "Distance based size") then
             size = size*(1-dist)
+            text_a = a*(1-dist)
         end
         if contains(opts, "Distance based radius") then
-            radius = radius*(1-dist)
+            radius = radius*(dist)
         end
         local w2s, w2s2 = gs.render["world_to_screen"](position.x, position.y, position.z)
         local _, angle = pos:to(position):angles()
@@ -131,7 +133,7 @@ local function on_paint()
                     if get_icon then
                         local def_size = get_icon:measure()
                         local size = {get_icon:measure(def_size*0.5)}
-                        get_icon:draw(point.x-size[1]/2, point.y+5, size[1], size[2])
+                        get_icon:draw(point.x-size[1]/2, point.y+5, size[1], size[2], 220, 220, 220, text_a or a)
                     end
                 end
             end
@@ -139,14 +141,14 @@ local function on_paint()
 
         gs.render["triangle"](point.x, point.y, converted[1], converted[2], converted[3], converted[4], r, g, b, a*alpha)
         if contains(opts, "Include name") then
-            gs.render["text"](point.x, point.y, 220, 220, 220, a, "-c", 0, gs.ent["get_player_name"](ent):upper())
+            gs.render["text"](point.x, point.y, 220, 220, 220, text_a or a, "-c", 0, gs.ent["get_player_name"](ent):upper())
         end
         if contains(opts, "Include weapons") then
             local get_icon = images.get_weapon_icon(weapon_idx)
             if get_icon then
                 local def_size = get_icon:measure()
                 local size = {get_icon:measure(def_size*0.5)}
-                get_icon:draw(point.x-size[1]/2, point.y+5, size[1], size[2], 220, 220, 220, a)
+                get_icon:draw(point.x-size[1]/2, point.y+5, size[1], size[2], 220, 220, 220, text_a or a)
             end
         end
 
